@@ -9,11 +9,17 @@ enum ActionType {
 	AT_ULTIMATE = 2
 };
 
+enum ActionTarget {
+	ATT_SINGLE_TARGET,
+	ATT_BLAST,
+	ATT_AOE,
+	ATT_RANDOM,
+};
+
 enum ActionPurpose {
-	AP_SINGLE_TARGET,
-	AP_BLAST,
-	AP_AOE,
-	AP_RANDOM,
+	AP_ATTACK,
+	AP_HEAL,
+	AP_STATUS
 };
 
 enum ScalingType {
@@ -52,29 +58,31 @@ public:
 		desc = "Default description.";
 		type = AT_BASIC;
 		energyGain = 10;
-		addModifier(1.0, AP_ATTACK_SINGLE_TARGET, SCT_ATK, Status(), 0);
+		addModifier(1.0, ATT_SINGLE_TARGET, AP_ATTACK, SCT_ATK, Status(), 0);
 	}
-	Action(string _name, string _desc, ActionType _type, int _energyGain, double _multiplier, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
+	Action(string _name, string _desc, ActionType _type, int _energyGain, double _multiplier, ActionTarget _target, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
 		name = _name;
 		desc = _desc;
 		type = _type;
 		energyGain = _energyGain;
-		addModifier(_multiplier, _purpose, _scaling, _status, _special);
+		addModifier(_multiplier, _target, _purpose, _scaling, _status, _special);
 	}
-	void addModifier(double _multiplier, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
-		components.push_back(ActionComponent(_multiplier, _purpose, _scaling, _status, _special));
+	void addModifier(double _multiplier, ActionTarget _target, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
+		components.push_back(ActionComponent(_multiplier, _target, _purpose, _scaling, _status, _special));
 	}
 };
 
 class ActionComponent {
 public:
 	double multiplier;
+	ActionTarget target;
 	ActionPurpose purpose;
 	ScalingType scaling;
 	Status status;
 	int special;
-	ActionComponent(double _multiplier, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
+	ActionComponent(double _multiplier, ActionTarget _target, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
 		multiplier = _multiplier;
+		target = _target;
 		purpose = _purpose;
 		scaling = _scaling;
 		status = _status;

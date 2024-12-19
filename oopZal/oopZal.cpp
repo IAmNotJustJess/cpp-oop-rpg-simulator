@@ -25,7 +25,8 @@ int main()
         AT_BASIC,
         15,
         1.0,
-        AP_SINGLE_TARGET,
+        ATT_SINGLE_TARGET,
+        AP_ATTACK,
         SCT_ATK,
         Status(0, 0, ST_NONE, 0),
         0
@@ -40,12 +41,13 @@ int main()
         AT_SKILL,
         35,
         2.5,
-        AP_SINGLE_TARGET,
+        ATT_SINGLE_TARGET,
+        AP_ATTACK,
         SCT_ATK,
         Status(0, 0, ST_NONE, 0),
         0
     );
-    action.addModifier(1.5, AP_BLAST, SCT_ATK, Status(0, 1.0, ST_DAMAGE_OVER_TIME, 2), 0);
+    action.addModifier(1.5, ATT_BLAST, AP_ATTACK, SCT_ATK, Status(0, 1.0, ST_DAMAGE_OVER_TIME, 2), 0);
     test.addAction(action);
     desc = "Przyzywa mocarna fale uderzeniowa.";
     desc += "Fala ta zadaje obrazenia wynoszace 400% Ataku Czarodzieja kazdemu przeciwnikowi.";
@@ -56,12 +58,13 @@ int main()
         AT_ULTIMATE,
         10,
         4.0,
-        AP_ATTACK_SINGLE_TARGET,
+        ATT_SINGLE_TARGET,
+        AP_ATTACK,
         SCT_ATK,
         Status(0, 0, ST_NONE, 0),
         0
     );
-    action.addModifier(2.0, AP_RANDOM, SCT_ATK, Status(), 0);
+    action.addModifier(2.0, ATT_RANDOM, AP_ATTACK, SCT_ATK, Status(), 0);
     test.addAction(action);
 
 }

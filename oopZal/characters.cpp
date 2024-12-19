@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <random>
 #include "actions.cpp"
 
 using namespace std;
@@ -129,8 +130,10 @@ public:
 		}
 
 		damage *= totalIncomingMultiplier;
-		srand((unsigned)time(NULL));
-		damage *= 1 + ((rand() % 21) / 100 - 0.1);
+		random_device rd;
+		mt19937 gen(rd());
+		uniform_int_distribution<> dis(0, 21);
+		damage *= 1 + ((dis(gen) % 21) / 100 - 0.1);
 
 		if (damage <= 0) {
 			damage = 1;
@@ -230,6 +233,9 @@ public:
 	void inflictStatus(Status status) {
 		statuses.push_back(status);
 	}
+	void inflictOT(Status status, int dmg) {
+		statuses.push_back(Status(dmg * status.multiplier, 0, status.type, status.endIn));
+	}
 	void addAction(Action action) {
 		actions.push_back(action);
 	}
@@ -258,23 +264,51 @@ public:
 				value = getShield();
 				break;
 			}
+			int valueHolder = value;
 			value *= current.multiplier;
-			switch (current.purpose) {
-			case AP_SINGLE_TARGET:
-				list.at(attackIndex).takeDamage(value);
+			vector<int> affected = vector<int>();
+			switch (current.target) {
+			case ATT_SINGLE_TARGET:
+				affected.push_back(attackIndex);
 				break;
-			case AP_BLAST:
+			case ATT_BLAST:
 				if (attackIndex >= 1) {
-					list.at(attackIndex - 1).takeDamage(value);
+					affected.push_back(attackIndex - 1);
 				}
-				list.at(attackIndex - 1).takeDamage(value);
+				affected.push_back(attackIndex);
 				if (attackIndex < list.size() - 2) {
-					list.at(attackIndex + 1).takeDamage(value);
+					affected.push_back(attackIndex + 1);
 				}
 				break;
-			case AP_AOE:
+			case ATT_AOE:
 				for (int j = 0; j < list.size(); j++) {
-					list.at(j).takeDamage(value);
+					affected.push_back(j);
+				}
+			case ATT_RANDOM:
+				random_device rd;
+				mt19937 gen(rd());
+				uniform_int_distribution<> dis(0, list.size() - 1);
+				for (int j = 0; j < current.special; j++) {
+					affected.push_back(int(dis(gen)));
+				}
+				break;
+			}
+			for (int j = 0; j < affected.size(); j++) {
+				switch (current.purpose) {
+				case AP_ATTACK:
+					list.at(attackIndex).takeDamage(value);
+					break;
+				case AP_HEAL:
+					list.at(attackIndex).heal(value);
+					break;
+				}
+				switch (current.status.type) {
+				case ST_HEAL_OVER_TIME: case ST_DAMAGE_OVER_TIME:
+					list.at(attackIndex).inflictOT(current.status, valueHolder);
+					break;
+				default:
+					list.at(attackIndex).inflictStatus(current.status);
+					break;
 				}
 			}
 		}
