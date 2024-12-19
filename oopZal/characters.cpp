@@ -148,6 +148,7 @@ public:
 					if (difference <= 0) {
 						damage -= statuses.at(i).value;
 						statuses.at(i).value = 0;
+						statuses.at(i).endIn = 0;
 					}
 					else {
 						damage = 0;
