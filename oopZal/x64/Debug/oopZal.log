@@ -1,0 +1,44 @@
+﻿  characters.cpp
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(71,9): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(72,10): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(73,10): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(83,19): warning C4244: "=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(104,13): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(106,15): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(157,10): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(158,12): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(159,10): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(160,14): warning C4267: "inicjowanie": konwersja z "size_t" do "int", możliwa utrata danych
+  oopZal.cpp
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(71,9): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(72,10): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(73,10): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(83,19): warning C4244: "=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(104,13): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(106,15): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(157,10): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(158,12): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(159,10): warning C4244: "*=": konwersja z "double" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+C:\Users\Pracownia\Documents\12479\oopZal\oopZal\characters.cpp(160,14): warning C4267: "inicjowanie": konwersja z "size_t" do "int", możliwa utrata danych
+  (kompilowanie pliku źródłowego „oopZal.cpp”)
+  
+  Generowanie kodu...
+  oopZal.vcxproj -> C:\Users\Pracownia\Documents\12479\oopZal\x64\Debug\oopZal.exe
