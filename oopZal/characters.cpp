@@ -139,6 +139,27 @@ public:
 			damage = 1;
 		}
 
+		int damageHolder = damage;
+		int shield = getShield();
+		if (shield > 0) {
+			for (int i = 0; i < statuses.size(); i++) {
+				if (statuses.at(i).type == ST_SHIELDED && damage > 0) {
+					int difference = statuses.at(i).value - damage;
+					if (difference <= 0) {
+						damage -= statuses.at(i).value;
+						statuses.at(i).value = 0;
+					}
+					else {
+						damage = 0;
+						statuses.at(i).value = difference;
+					}
+				}
+			}
+		}
+
+		if (damage == 0) {
+			return damageHolder;
+		}
 		hp -= damage;
 		if (hp <= 0) {
 			hp = 0;
@@ -219,6 +240,9 @@ public:
 					break;
 				case ST_DAMAGE_OVER_TIME:
 					takeDamage(currentStatus.value);
+					break;
+				case ST_HEAL_OVER_TIME:
+					heal(currentStatus.value);
 					break;
 			}
 			statuses.at(i).endIn -= 1;
@@ -321,6 +345,7 @@ public:
 		for (int i = 0; i < statuses.size(); i++) {
 			if (statuses.at(i).type == ST_SHIELDED) value += statuses.at(i).value;
 		}
+		return value;
 	}
 	
 };
