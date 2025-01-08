@@ -10,10 +10,16 @@ enum ActionType {
 };
 
 enum ActionTarget {
-	ATT_SINGLE_TARGET,
-	ATT_BLAST,
-	ATT_AOE,
-	ATT_RANDOM,
+	ATG_SELF,
+	ATG_ALLY,
+	ATG_ENEMY
+};
+
+enum ActionAffect {
+	AF_SINGLE_TARGET,
+	AF_BLAST,
+	AF_AOE,
+	AF_RANDOM,
 };
 
 enum ActionPurpose {
@@ -46,50 +52,6 @@ enum StatusType {
 	ST_SHIELDED
 };
 
-class Action {
-public:
-	string name;
-	string desc;
-	ActionType type;
-	int energyGain;
-	vector<ActionComponent> components;
-	Action() {
-		name = "Default.";
-		desc = "Default description.";
-		type = AT_BASIC;
-		energyGain = 10;
-		addModifier(1.0, ATT_SINGLE_TARGET, AP_ATTACK, SCT_ATK, Status(), 0);
-	}
-	Action(string _name, string _desc, ActionType _type, int _energyGain, double _multiplier, ActionTarget _target, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
-		name = _name;
-		desc = _desc;
-		type = _type;
-		energyGain = _energyGain;
-		addModifier(_multiplier, _target, _purpose, _scaling, _status, _special);
-	}
-	void addModifier(double _multiplier, ActionTarget _target, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
-		components.push_back(ActionComponent(_multiplier, _target, _purpose, _scaling, _status, _special));
-	}
-};
-
-class ActionComponent {
-public:
-	double multiplier;
-	ActionTarget target;
-	ActionPurpose purpose;
-	ScalingType scaling;
-	Status status;
-	int special;
-	ActionComponent(double _multiplier, ActionTarget _target, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
-		multiplier = _multiplier;
-		target = _target;
-		purpose = _purpose;
-		scaling = _scaling;
-		status = _status;
-		special = _special;
-	};
-};
-
 class Status {
 public:
 	int value;
@@ -107,5 +69,51 @@ public:
 		multiplier = _multiplier;
 		type = _type;
 		endIn = _endIn;
+	}
+};
+
+class ActionComponent {
+public:
+	double multiplier;
+	ActionTarget target;
+	ActionAffect affect;
+	ActionPurpose purpose;
+	ScalingType scaling;
+	Status status;
+	int special;
+	ActionComponent(double _multiplier, ActionTarget _target, ActionAffect _affect, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
+		multiplier = _multiplier;
+		target = _target;
+		affect = _affect;
+		purpose = _purpose;
+		scaling = _scaling;
+		status = _status;
+		special = _special;
+	};
+};
+
+class Action {
+public:
+	string name;
+	string desc;
+	ActionType type;
+	int energyGain;
+	vector<ActionComponent> components;
+	Action() {
+		name = "Default.";
+		desc = "Default description.";
+		type = AT_BASIC;
+		energyGain = 10;
+		addComponent(1.0, ATG_ENEMY, AF_SINGLE_TARGET, AP_ATTACK, SCT_ATK, Status(), 0);
+	}
+	Action(string _name, string _desc, ActionType _type, int _energyGain, double _multiplier, ActionTarget _target, ActionAffect _affect, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
+		name = _name;
+		desc = _desc;
+		type = _type;
+		energyGain = _energyGain;
+		addComponent(_multiplier, _target, _affect, _purpose, _scaling, _status, _special);
+	}
+	void addComponent(double _multiplier, ActionTarget _target, ActionAffect _affect, ActionPurpose _purpose, ScalingType _scaling, Status _status, int _special) {
+		components.push_back(ActionComponent(_multiplier, _target, _affect, _purpose, _scaling, _status, _special));
 	}
 };

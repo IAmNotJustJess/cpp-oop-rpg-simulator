@@ -240,10 +240,10 @@ public:
 					totalDEFMultiplier += currentStatus.multiplier;
 					break;
 				case ST_DAMAGE_OVER_TIME:
-					takeDamage(currentStatus.value);
+					takeDamage(currentStatus.value * currentStatus.multiplier);
 					break;
 				case ST_HEAL_OVER_TIME:
-					heal(currentStatus.value);
+					heal(currentStatus.value * currentStatus.multiplier);
 					break;
 			}
 			statuses.at(i).endIn -= 1;
@@ -255,11 +255,15 @@ public:
 			if (statuses.at(i).endIn <= 0) statuses.erase(statuses.begin() + i);
 		}
 	}
-	void inflictStatus(Status status) {
+	void inflictStatus(Status status, int info) {
+		switch (status.type) {
+		default:
+			statuses.push_back(status);
+			break;
+		case ST_DAMAGE_OVER_TIME:
+			status.value = info;
+		}
 		statuses.push_back(status);
-	}
-	void inflictOT(Status status, int dmg) {
-		statuses.push_back(Status(dmg * status.multiplier, 0, status.type, status.endIn));
 	}
 	void addAction(Action action) {
 		actions.push_back(action);
@@ -267,7 +271,7 @@ public:
 	Action getAction(int i) {
 		return actions.at(i);
 	}
-	void useAction(Action action, vector<Character>& list, int attackIndex) {
+	void useAction(Character& caster, Action action, vector<Character>& list, int attackIndex) {
 		energy += action.energyGain;
 		if (energy >= max_energy) {
 			energy = max_energy;
@@ -293,10 +297,10 @@ public:
 			value *= current.multiplier;
 			vector<int> affected = vector<int>();
 			switch (current.target) {
-			case ATT_SINGLE_TARGET:
+			case AF_SINGLE_TARGET:
 				affected.push_back(attackIndex);
 				break;
-			case ATT_BLAST:
+			case AF_BLAST:
 				if (attackIndex >= 1) {
 					affected.push_back(attackIndex - 1);
 				}
@@ -305,11 +309,11 @@ public:
 					affected.push_back(attackIndex + 1);
 				}
 				break;
-			case ATT_AOE:
+			case AF_AOE:
 				for (int j = 0; j < list.size(); j++) {
 					affected.push_back(j);
 				}
-			case ATT_RANDOM:
+			case AF_RANDOM:
 				random_device rd;
 				mt19937 gen(rd());
 				uniform_int_distribution<> dis(0, list.size() - 1);
@@ -320,20 +324,34 @@ public:
 			}
 			for (int j = 0; j < affected.size(); j++) {
 				switch (current.purpose) {
-				case AP_ATTACK:
-					list.at(attackIndex).takeDamage(value);
-					break;
-				case AP_HEAL:
-					list.at(attackIndex).heal(value);
-					break;
+					case AP_ATTACK:
+						list.at(attackIndex).takeDamage(value);
+						break;
+					case AP_HEAL:
+						list.at(attackIndex).heal(value);
+						break;
+					}
+				int info;
+				switch (current.scaling) {
+					case SCT_ATK:
+						info = caster.atk;
+						break;
+					case SCT_DEF:
+						info = caster.def;
+						break;
+					case SCT_HP:
+						info = caster.hp;
+						break;
+					case SCT_SHIELD:
+						info = caster.getShield();
+						break;
 				}
 				switch (current.status.type) {
-				case ST_HEAL_OVER_TIME: case ST_DAMAGE_OVER_TIME:
-					list.at(attackIndex).inflictOT(current.status, valueHolder);
-					break;
-				default:
-					list.at(attackIndex).inflictStatus(current.status);
-					break;
+					case ST_NONE:
+						break;
+					default:
+						list.at(attackIndex).inflictStatus(current.status, info);
+						break;
 				}
 			}
 		}
