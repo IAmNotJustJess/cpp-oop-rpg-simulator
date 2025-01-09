@@ -12,6 +12,16 @@ enum CharacterType {
 
 class Character {
 private:
+	double lvlUpHPRatio;
+	double lvlUpATKRatio;
+	double lvlUpDEFRatio;
+	vector<Action> actions;
+	vector<Status> statuses;
+	int oldMaxHP;
+	int oldATK;
+	int oldDEF;
+
+public:
 	string name;
 	string desc;
 	CharacterType type;
@@ -24,16 +34,6 @@ private:
 	int max_energy;
 	int level;
 	int xp;
-	double lvlUpHPRatio;
-	double lvlUpATKRatio;
-	double lvlUpDEFRatio;
-	vector<Action> actions;
-	vector<Status> statuses;
-	int oldMaxHP;
-	int oldATK;
-	int oldDEF;
-
-public:
 	Character() {
 		name = "Default";
 		desc = "Default description.";
@@ -99,12 +99,20 @@ public:
 		def *= lvlUpDEFRatio;
 		atk *= lvlUpATKRatio;
 		cout << name << endl;
-		cout << "Level Up! " << level - 1 << " -> " << level << endl;
+		cout << "Poziom w Gore! " << level - 1 << " -> " << level << endl;
 		cout << "-" << endl;
-		cout << "HP: " << oldhp << " -> " << hp << endl;
-		cout << "ATK: " << oldatk << " -> " << atk << endl;
-		cout << "DEF: " << olddef << " -> " << def << endl;
+		cout << "Punkty Zdrowia: " << oldhp << " -> " << hp << endl;
+		cout << "Atak: " << oldatk << " -> " << atk << endl;
+		cout << "Obrona: " << olddef << " -> " << def << endl;
 		checkForLevelUp();
+	}
+	void scaleToLevel(int toLvl) {
+		for (int i = level; i < toLvl; level++) {
+			hp *= lvlUpHPRatio;
+			def *= lvlUpDEFRatio;
+			atk *= lvlUpATKRatio;
+			xp *= 1.2;
+		}
 	}
 	int takeDamage(int damage) {
 
@@ -118,7 +126,7 @@ public:
 		for (int i = 0; i < statuses.size(); i++) {
 			Status currentStatus = statuses.at(i);
 			switch (currentStatus.type) {
-			case ST_INCOMING_DMG_INCREASE:
+			case ST_INCOMING_DMG_VALUE:
 				damage += currentStatus.value;
 				break;
 			case ST_INCOMING_DMG_MULTIPLIER:
@@ -177,10 +185,10 @@ public:
 		for (int i = 0; i < statuses.size(); i++) {
 			Status currentStatus = statuses.at(i);
 			switch (currentStatus.type) {
-			case ST_HEAL_VALUE:
+			case ST_INCOMING_HEAL_VALUE:
 				heal += currentStatus.value;
 				break;
-			case ST_HEAL_MULTIPLIER:
+			case ST_INCOMING_HEAL_MULTIPLIER:
 				totalIncomingMultiplier += currentStatus.multiplier;
 				break;
 			default:
@@ -268,10 +276,11 @@ public:
 	void addAction(Action action) {
 		actions.push_back(action);
 	}
-	Action getAction(int i) {
-		return actions.at(i);
+	vector<Action> getActions() {
+		return actions;
 	}
-	void useAction(Character& caster, Action action, vector<Character>& list, int attackIndex) {
+	void useAction(Action action, vector<Character>& list, int attackIndex) {
+		if (action.type == AT_ULTIMATE && energy < max_energy) return;
 		energy += action.energyGain;
 		if (energy >= max_energy) {
 			energy = max_energy;
@@ -316,7 +325,7 @@ public:
 			case AF_RANDOM:
 				random_device rd;
 				mt19937 gen(rd());
-				uniform_int_distribution<> dis(0, list.size() - 1);
+				uniform_int_distribution<int> dis(0, list.size() - 1);
 				for (int j = 0; j < current.special; j++) {
 					affected.push_back(int(dis(gen)));
 				}
@@ -325,25 +334,25 @@ public:
 			for (int j = 0; j < affected.size(); j++) {
 				switch (current.purpose) {
 					case AP_ATTACK:
-						list.at(attackIndex).takeDamage(value);
+						list.at(attackIndex).takeDamage(getOutgoingDamage(value));
 						break;
 					case AP_HEAL:
-						list.at(attackIndex).heal(value);
+						list.at(attackIndex).heal(getOutgoingHeal(value));
 						break;
 					}
 				int info;
 				switch (current.scaling) {
 					case SCT_ATK:
-						info = caster.atk;
+						info = atk;
 						break;
 					case SCT_DEF:
-						info = caster.def;
+						info = def;
 						break;
 					case SCT_HP:
-						info = caster.hp;
+						info = hp;
 						break;
 					case SCT_SHIELD:
-						info = caster.getShield();
+						info = getShield();
 						break;
 				}
 				switch (current.status.type) {
@@ -365,6 +374,45 @@ public:
 			if (statuses.at(i).type == ST_SHIELDED) value += statuses.at(i).value;
 		}
 		return value;
+	}
+	int getOutgoingDamage(int damage) {
+		double value = 1;
+		for (int i = 0; i < statuses.size(); i++) {
+			if (statuses.at(i).type == ST_OUTGOING_DMG_MULTIPLIER) value *= statuses.at(i).multiplier;
+			if (statuses.at(i).type == ST_OUTGOING_DMG_VALUE) damage += statuses.at(i).value;
+		}
+		damage = damage * value;
+		return damage;
+	}
+	int getOutgoingHeal(int heal) {
+		double value = 1;
+		for (int i = 0; i < statuses.size(); i++) {
+			if (statuses.at(i).type == ST_OUTGOING_HEAL_MULTIPLIER) value *= statuses.at(i).multiplier;
+			if (statuses.at(i).type == ST_OUTGOING_HEAL_VALUE) heal += statuses.at(i).value;
+		}
+		heal = heal * value;
+		return heal;
+	}
+	void displayActions() {
+		for (int i = 0; i <= actions.size() - 1; i++) {
+			Action action = actions.at(i);
+			cout << action.name << endl;
+			switch (action.type) {
+				case AT_BASIC:
+					cout << "1. Podstawowy Atak" << endl;
+					cout << "Regeneruje punkt umiejetnosci." << endl;
+					break;
+				case AT_SKILL:
+					cout << "2. Umiejetnosc" << endl;
+					cout << "Wymaga punktu umiejetnosci." << endl;
+					break;
+				case AT_ULTIMATE:
+					cout << "3. Umiejetnosc Ostateczna" << endl;
+					cout << "Energia " << energy << "/" << max_energy << endl;
+					break;
+			}
+			cout << "\n===\n" << endl;
+		}
 	}
 	
 };
