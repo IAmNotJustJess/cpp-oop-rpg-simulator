@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClCompile Include="actions.cpp" />
     <ClCompile Include="characters.cpp" />
+    <ClCompile Include="gamecontroller.cpp" />
     <ClCompile Include="oopZal.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
