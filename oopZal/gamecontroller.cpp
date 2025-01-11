@@ -1,4 +1,5 @@
 #include "characters.cpp"
+#include <thread>
 
 class GameController {
 public:
@@ -23,10 +24,23 @@ public:
         uniform_int_distribution<int> disActions(0, NPC.getActions().size() - 1);
         int attack = disAttack(gen);
         int action = disActions(gen);
-        NPC.useAction(NPC.getActions().at(action), playerCharacters, attack);
+        vector<ActionDealt> adv = NPC.useAction(NPC.getActions().at(action), playerCharacters, attack);
+        displayActionAgainst(NPC.name, playerCharacters.at(attack).name, NPC.getActions().at(action).name, adv);
     }
-    void displayActionAgainst(string caster, string against, string actionName) {
+    void displayActionAgainst(string caster, string against, string actionName, vector<ActionDealt> adv) {
         cout << caster << " uzywa " << actionName << " na " << against << endl;
+        for (int i = 0; i <= adv.size() - 1; i++) {
+            switch (adv.at(i).purpose) {
+            case AP_STATUS:
+                break;
+            case AP_ATTACK:
+                cout << adv.at(i).name << " otrzymal " << adv.at(i).value << " punktow obrazen!" << endl;
+                break;
+            case AP_HEAL:
+                cout << adv.at(i).name << " zostal uleczony o " << adv.at(i).value << " punktow zdrowia!" << endl;
+                break;
+            }
+        }
     }
     void actAsPC(int index) {
         Character& PC = playerCharacters.at(index);
@@ -42,6 +56,7 @@ public:
                 action = 0;
             }
         }
+        vector<ActionDealt> adv;
         Action selectedAction = PC.getActions().at(action - 1);
         while (attack == 0) {
             if (selectedAction.components.at(0).target == ATG_ALLY) {
@@ -50,7 +65,8 @@ public:
                 if (attack <= 0 || attack > playerCharacters.size()) {
                     attack = 0;
                 }
-                PC.useAction(PC.getActions().at(action), playerCharacters, attack);
+                adv = PC.useAction(PC.getActions().at(action), playerCharacters, attack);
+                displayActionAgainst(PC.name, playerCharacters.at(attack).name, PC.getActions().at(attack).name, adv);
             }
             else if (selectedAction.components.at(0).target == ATG_ENEMY) {
                 cout << "Wybierz na ktorym przeciwniku uzyc umiejetnosci (1-" << enemyCharacters.size() << "): ";
@@ -58,21 +74,62 @@ public:
                 if (attack <= 0 || attack > playerCharacters.size()) {
                     attack = 0;
                 }
-                PC.useAction(PC.getActions().at(action), enemyCharacters, attack);
+                adv = PC.useAction(PC.getActions().at(action), enemyCharacters, attack);
+                displayActionAgainst(PC.name, enemyCharacters.at(attack).name, PC.getActions().at(attack).name, adv);
             }
             else if (selectedAction.components.at(0).target == ATG_SELF) {
                 attack = index;
-                PC.useAction(PC.getActions().at(action), playerCharacters, attack);
+                adv = PC.useAction(PC.getActions().at(action), playerCharacters, attack);
+                displayActionAgainst(PC.name, "sobie", PC.getActions().at(attack).name, adv);
             }
-            
         }
         
     }
     void enemysTurn() {
         cout << "Tura przeciwnika..." << endl;
+        for (int i = 0; i < enemyCharacters.size() - 1; i++) {
+            if (enemyCharacters.at(i).isAlive) {
+                actAsNPC(i);
+            }
+        }
     }
     void playersTurn() {
         cout << "Twoja tura!" << endl;
+        for (int i = 0; i < playerCharacters.size() - 1; i++) {
+            if (playerCharacters.at(i).isAlive) {
+                actAsPC(i);
+            }
+        }
+    }
+    void displayCharacterScreen() {
+        for (int i = 0; i < enemyCharacters.size() - 1; i++) {
+            Character enemy = enemyCharacters.at(i);
+            cout << i + 1 << ": " << enemy.name << endl;
+            if (enemyCharacters.at(i).isAlive) {
+                cout << "HP: " << enemy.hp << endl;
+            }
+            else {
+                cout << "HP: 0 [KO]" << endl;
+            }
+            cout << "\n";
+        }
+        cout << "\n\n===\n\n";
+        for (int i = 0; i < playerCharacters.size() - 1; i++) {
+            Character player = playerCharacters.at(i);
+            cout << i + 1 << ": " << player.name << endl;
+            if (enemyCharacters.at(i).isAlive) {
+                cout << "HP: " << player.hp << " / " << player.maxhp << endl;
+                cout << "Energia: " << player.energy << " / " << player.maxEnergy;
+            }
+            else {
+                cout << "HP: 0 [KO]" << endl;
+                cout << "\n";
+            }
+        }
+        this_thread::sleep_for(2s);
+    }
+    void checkForEndOfBattle() {
+
     }
     GameController() {
         Character currentCharacter;

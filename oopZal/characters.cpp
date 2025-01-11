@@ -31,7 +31,7 @@ public:
 	int atk;
 	int def;
 	int energy;
-	int max_energy;
+	int maxEnergy;
 	int level;
 	int xp;
 	Character() {
@@ -44,7 +44,7 @@ public:
 		atk = 10;
 		def = 10;
 		energy = 0;
-		max_energy = 100;
+		maxEnergy = 100;
 		level = 1;
 		xp = 0;
 		lvlUpHPRatio = 1.5;
@@ -58,7 +58,7 @@ public:
 	}
 	Character(string _name, string _desc, CharacterType _type,
 		int _hp, int _atk, int _def,
-		int _max_energy, int _level, int _xp,
+		int _maxEnergy, int _level, int _xp,
 		double _lvlUpHPRatio, double _lvlUpATKRatio, double _lvlUpDEFRatio
 	) {
 		name = _name;
@@ -70,7 +70,7 @@ public:
 		atk = _atk;
 		def = _def;
 		energy = 0;
-		max_energy = _max_energy;
+		maxEnergy = _maxEnergy;
 		level = _level;
 		xp = _xp;
 		lvlUpHPRatio = _lvlUpHPRatio;
@@ -169,11 +169,13 @@ public:
 		if (damage == 0) {
 			return damageHolder;
 		}
+
 		hp -= damage;
 		if (hp <= 0) {
 			hp = 0;
 			isAlive = false;
 		}
+		return damageHolder;
 	}
 	int heal(int heal) {
 
@@ -205,7 +207,7 @@ public:
 		if (hp >= maxhp) {
 			hp = maxhp;
 		}
-
+		return heal;
 	}
 	void checkStatuses() {
 		if (oldATK == 0) {
@@ -229,30 +231,30 @@ public:
 		for (int i = 0; i < statuses.size(); i++) {
 			Status currentStatus = statuses.at(i);
 			switch (currentStatus.type) {
-				case ST_ATK_VALUE:
-					atk += currentStatus.value;
-					break;
-				case ST_ATK_MULTIPLIER:
-					totalATKMultiplier += currentStatus.multiplier;
-					break;
-				case ST_MAXHP_VALUE:
-					maxhp += currentStatus.value;
-					break;
-				case ST_MAXHP_MULTIPLIER:
-					totalMaxHPMultiplier += currentStatus.multiplier;
-					break;
-				case ST_DEF_VALUE:
-					def += currentStatus.value;
-					break;
-				case ST_DEF_MULTIPLIER:
-					totalDEFMultiplier += currentStatus.multiplier;
-					break;
-				case ST_DAMAGE_OVER_TIME:
-					takeDamage(currentStatus.value * currentStatus.multiplier);
-					break;
-				case ST_HEAL_OVER_TIME:
-					heal(currentStatus.value * currentStatus.multiplier);
-					break;
+			case ST_ATK_VALUE:
+				atk += currentStatus.value;
+				break;
+			case ST_ATK_MULTIPLIER:
+				totalATKMultiplier += currentStatus.multiplier;
+				break;
+			case ST_MAXHP_VALUE:
+				maxhp += currentStatus.value;
+				break;
+			case ST_MAXHP_MULTIPLIER:
+				totalMaxHPMultiplier += currentStatus.multiplier;
+				break;
+			case ST_DEF_VALUE:
+				def += currentStatus.value;
+				break;
+			case ST_DEF_MULTIPLIER:
+				totalDEFMultiplier += currentStatus.multiplier;
+				break;
+			case ST_DAMAGE_OVER_TIME:
+				takeDamage(currentStatus.value * currentStatus.multiplier);
+				break;
+			case ST_HEAL_OVER_TIME:
+				heal(currentStatus.value * currentStatus.multiplier);
+				break;
 			}
 			statuses.at(i).endIn -= 1;
 		}
@@ -260,7 +262,7 @@ public:
 		maxhp *= totalMaxHPMultiplier;
 		def *= totalDEFMultiplier;
 		for (int i = statuses.size() - 1; i >= 0; i--) {
-			if (statuses.at(i).endIn <= 0) statuses.erase(statuses.begin() + i);
+			if (statuses.at(i).endIn < 0) statuses.erase(statuses.begin() + i);
 		}
 	}
 	void inflictStatus(Status status, int info) {
@@ -279,11 +281,12 @@ public:
 	vector<Action> getActions() {
 		return actions;
 	}
-	void useAction(Action action, vector<Character>& list, int attackIndex) {
-		if (action.type == AT_ULTIMATE && energy < max_energy) return;
+	vector<ActionDealt> useAction(Action action, vector<Character>& list, int attackIndex) {
+		vector<ActionDealt> adv;
+		if (action.type == AT_ULTIMATE && energy < maxEnergy) return;
 		energy += action.energyGain;
-		if (energy >= max_energy) {
-			energy = max_energy;
+		if (energy >= maxEnergy) {
+			energy = maxEnergy;
 		}
 		for (int i = 0; i < action.components.size(); i++) {
 			ActionComponent current = action.components.at(i);
@@ -333,37 +336,38 @@ public:
 			}
 			for (int j = 0; j < affected.size(); j++) {
 				switch (current.purpose) {
-					case AP_ATTACK:
-						list.at(attackIndex).takeDamage(getOutgoingDamage(value));
-						break;
-					case AP_HEAL:
-						list.at(attackIndex).heal(getOutgoingHeal(value));
-						break;
-					}
+				case AP_ATTACK:
+					adv.push_back(ActionDealt(list.at(attackIndex).name, current.purpose, list.at(attackIndex).takeDamage(getOutgoingDamage(value))));
+					break;
+				case AP_HEAL:
+					adv.push_back(ActionDealt(list.at(attackIndex).name, current.purpose, list.at(attackIndex).heal(getOutgoingDamage(value))));
+					break;
+				}
 				int info;
 				switch (current.scaling) {
-					case SCT_ATK:
-						info = atk;
-						break;
-					case SCT_DEF:
-						info = def;
-						break;
-					case SCT_HP:
-						info = hp;
-						break;
-					case SCT_SHIELD:
-						info = getShield();
-						break;
+				case SCT_ATK:
+					info = atk;
+					break;
+				case SCT_DEF:
+					info = def;
+					break;
+				case SCT_HP:
+					info = hp;
+					break;
+				case SCT_SHIELD:
+					info = getShield();
+					break;
 				}
 				switch (current.status.type) {
-					case ST_NONE:
-						break;
-					default:
-						list.at(attackIndex).inflictStatus(current.status, info);
-						break;
+				case ST_NONE:
+					break;
+				default:
+					list.at(attackIndex).inflictStatus(current.status, info);
+					break;
 				}
 			}
 		}
+		return adv;
 	}
 	void readStatusesCount() {
 		cout << statuses.size() << endl;
@@ -394,25 +398,24 @@ public:
 		return heal;
 	}
 	void displayActions() {
-		for (int i = 0; i <= actions.size() - 1; i++) {
+		for (int i = 0; i < actions.size() - 1; i++) {
 			Action action = actions.at(i);
 			cout << action.name << endl;
 			switch (action.type) {
-				case AT_BASIC:
-					cout << "1. Podstawowy Atak" << endl;
-					cout << "Regeneruje punkt umiejetnosci." << endl;
-					break;
-				case AT_SKILL:
-					cout << "2. Umiejetnosc" << endl;
-					cout << "Wymaga punktu umiejetnosci." << endl;
-					break;
-				case AT_ULTIMATE:
-					cout << "3. Umiejetnosc Ostateczna" << endl;
-					cout << "Energia " << energy << "/" << max_energy << endl;
-					break;
+			case AT_BASIC:
+				cout << "1. Podstawowy Atak" << endl;
+				cout << "Regeneruje punkt umiejetnosci." << endl;
+				break;
+			case AT_SKILL:
+				cout << "2. Umiejetnosc" << endl;
+				cout << "Wymaga punktu umiejetnosci." << endl;
+				break;
+			case AT_ULTIMATE:
+				cout << "3. Umiejetnosc Ostateczna" << endl;
+				cout << "Energia " << energy << "/" << maxEnergy << endl;
+				break;
 			}
 			cout << "\n===\n" << endl;
 		}
 	}
-	
 };

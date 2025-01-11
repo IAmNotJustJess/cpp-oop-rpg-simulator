@@ -121,3 +121,15 @@ public:
 		components.push_back(ActionComponent(_multiplier, _target, _affect, _purpose, _scaling, _status, _special));
 	}
 };
+
+class ActionDealt {
+public:
+	string name;
+	ActionPurpose purpose;
+	int value;
+	ActionDealt(string _name, ActionPurpose _purpose, int _value) {
+		name = _name;
+		purpose = _purpose;
+		value = _value;
+	}
+};
