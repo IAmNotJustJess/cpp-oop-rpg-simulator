@@ -1,2 +1,4 @@
 .vs
-oopZal/x64/Debug
+.vscode
+main.exe
+x64/Debug
