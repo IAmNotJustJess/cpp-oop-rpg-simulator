@@ -38,7 +38,7 @@ public:
 		name = "Default";
 		desc = "Default description.";
 		type = NON_PLAYABLE;
-		isAlive = false;
+		isAlive = true;
 		maxhp = 100;
 		hp = maxhp;
 		atk = 10;
@@ -64,7 +64,7 @@ public:
 		name = _name;
 		desc = _desc;
 		type = _type;
-		isAlive = false;
+		isAlive = true;
 		maxhp = _hp;
 		hp = maxhp;
 		atk = _atk;
@@ -83,13 +83,12 @@ public:
 		oldDEF = 0;
 	}
 	void checkForLevelUp() {
-		if (type != PLAYABLE) {
-			return;
-		}
+		if (type != PLAYABLE) return;
+
 		int xpNeeded = 175 * level;
-		if (xp < xpNeeded) {
-			return;
-		}
+
+		if (xp < xpNeeded) return;
+
 		level += 1;
 		xp -= xpNeeded;
 		int hpHolder = hp;
@@ -98,12 +97,14 @@ public:
 		hp *= lvlUpHPRatio;
 		def *= lvlUpDEFRatio;
 		atk *= lvlUpATKRatio;
+
 		cout << endl << name << endl;
 		cout << "Poziom w Gore! " << level - 1 << " -> " << level << endl;
 		cout << "-" << endl;
 		cout << "Punkty Zdrowia: " << hpHolder << " -> " << hp << endl;
 		cout << "Atak: " << atkHolder << " -> " << atk << endl;
 		cout << "Obrona: " << defHolder << " -> " << def << endl << endl;
+		
 		checkForLevelUp();
 	}
 	void clearBeforeBattle() {
@@ -115,22 +116,28 @@ public:
 		oldMaxHP = 0;
 	}
 	void scaleToLevel(int toLvl) {
-		for (int i = level; i < toLvl; level++) {
+		if(toLvl <= level) return;
+		for (int i = level; i < toLvl; i++) {
 			hp *= lvlUpHPRatio;
 			def *= lvlUpDEFRatio;
 			atk *= lvlUpATKRatio;
+			level += 1;
 			xp *= 1.2;
 		}
 	}
-	int takeDamage(int damage) {
+	int takeDamage(int dmg) {
+		
+		double damage = dmg;
+		cout << damage << "|0|";
+		damage = damage / (def * 0.005 + 1);
+		cout << damage << "|1|";
+		cout << "g" << (def * 0.005 + 1) << "g";
 
-		damage = damage * (1 - (1 / (def * 0.05 + 1)));
-
-		if (damage <= 0) {
+		if (damage < 1) {
 			damage = 1;
 		}
 
-		double totalIncomingMultiplier = 0;
+		double totalIncomingMultiplier = 1;
 		for (int i = 0; i < statuses.size(); i++) {
 			Status currentStatus = statuses.at(i);
 			switch (currentStatus.type) {
@@ -138,18 +145,20 @@ public:
 				damage += currentStatus.value;
 				break;
 			case ST_INCOMING_DMG_MULTIPLIER:
-				totalIncomingMultiplier += currentStatus.multiplier;
+				totalIncomingMultiplier *= currentStatus.multiplier;
 				break;
 			default:
 				break;
 			}
 		}
+		cout << damage << "|2|";
 
 		damage *= totalIncomingMultiplier;
 		random_device rd;
 		mt19937 gen(rd());
 		uniform_int_distribution<> dis(0, 21);
 		damage *= 1 + ((dis(gen) % 21) / 100 - 0.1);
+		cout << damage << "|3|";
 
 		if (damage <= 0) {
 			damage = 1;
@@ -205,6 +214,7 @@ public:
 				break;
 			}
 		}
+
 		heal *= totalIncomingMultiplier;
 
 		if (heal <= 0) {
@@ -218,25 +228,22 @@ public:
 		return heal;
 	}
 	void checkStatuses() {
-		if (oldATK == 0) {
-			oldATK = atk;
-		}
-		if (oldMaxHP == 0) {
-			oldMaxHP = maxhp;
-		}
-		if (oldDEF == 0) {
-			oldDEF = def;
-		}
+
+		if (oldATK == 0) oldATK = atk;
+		if (oldMaxHP == 0) oldMaxHP = maxhp;
+		if (oldDEF == 0) oldDEF = def;
+
 		atk = oldATK;
 		maxhp = oldMaxHP;
 		def = oldDEF;
-		if (statuses.size() <= 0) {
-			return;
-		}
+		if (statuses.size() <= 0) return;
+
 		double totalATKMultiplier = 0;
 		double totalMaxHPMultiplier = 0;
 		double totalDEFMultiplier = 0;
+
 		for (int i = 0; i < statuses.size(); i++) {
+
 			Status currentStatus = statuses.at(i);
 			switch (currentStatus.type) {
 			case ST_ATK_VALUE:
@@ -266,9 +273,11 @@ public:
 			}
 			statuses.at(i).endIn -= 1;
 		}
+		
 		atk *= totalATKMultiplier;
 		maxhp *= totalMaxHPMultiplier;
 		def *= totalDEFMultiplier;
+		
 		for (int i = statuses.size() - 1; i >= 0; i--) {
 			if (statuses.at(i).endIn < 0) statuses.erase(statuses.begin() + i);
 		}
@@ -333,6 +342,7 @@ public:
 				for (int j = 0; j < list.size(); j++) {
 					affected.push_back(j);
 				}
+				break;
 			case AF_RANDOM:
 				random_device rd;
 				mt19937 gen(rd());
@@ -343,12 +353,16 @@ public:
 				break;
 			}
 			for (int j = 0; j < affected.size(); j++) {
+				cout << affected.at(j) << "d";
+			}
+			for (int j = 0; j < affected.size(); j++) {
+				Character &who = list.at(affected.at(j));
 				switch (current.purpose) {
 				case AP_ATTACK:
-					adv.push_back(ActionDealt(list.at(attackIndex).name, current.purpose, list.at(attackIndex).takeDamage(getOutgoingDamage(value))));
+					adv.push_back(ActionDealt(who.name, current.purpose, who.takeDamage(getOutgoingDamage(value))));
 					break;
 				case AP_HEAL:
-					adv.push_back(ActionDealt(list.at(attackIndex).name, current.purpose, list.at(attackIndex).heal(getOutgoingDamage(value))));
+					adv.push_back(ActionDealt(who.name, current.purpose, who.heal(getOutgoingDamage(value))));
 					break;
 				}
 				int info;
@@ -406,24 +420,63 @@ public:
 		return heal;
 	}
 	void displayActions() {
-		for (int i = 0; i < actions.size() - 1; i++) {
+		for (int i = 0; i < actions.size(); i++) {
 			Action action = actions.at(i);
-			cout << action.name << endl;
 			switch (action.type) {
 			case AT_BASIC:
-				cout << "1. Podstawowy Atak" << endl;
+				cout << "1. " << action.name << endl;
 				cout << "Regeneruje punkt umiejetnosci." << endl;
 				break;
 			case AT_SKILL:
-				cout << "2. Umiejetnosc" << endl;
+				cout << "2. " << action.name << endl;
 				cout << "Wymaga punktu umiejetnosci." << endl;
 				break;
 			case AT_ULTIMATE:
-				cout << "3. Umiejetnosc Ostateczna" << endl;
-				cout << "Energia " << energy << "/" << maxEnergy << endl;
+				cout << "3. " << action.name << endl;
+				cout << "Wymaga energii: " << energy << "/" << maxEnergy << endl;
 				break;
 			}
 			cout << "\n===\n" << endl;
 		}
+	}
+	void displayFullActions() {
+		cout << "\n===\n" << endl;
+		for (int i = 0; i < actions.size(); i++) {
+			Action action = actions.at(i);
+			switch (action.type) {
+			case AT_BASIC:
+				cout << action.name << endl << endl;
+				cout << action.desc << endl << endl;
+				cout << "Regeneruje punkt umiejetnosci." << endl;
+				break;
+			case AT_SKILL:
+				cout << action.name << endl << endl;
+				cout << action.desc << endl << endl;
+				cout << "Wymaga punktu umiejetnosci." << endl;
+				break;
+			case AT_ULTIMATE:
+				cout << action.name << endl << endl;
+				cout << action.desc << endl << endl;
+				cout << "Wymaga energii: " << energy << "/" << maxEnergy << endl;
+				break;
+			}
+			cout << "\n===\n" << endl;
+		}
+	}
+	void displayInfo() {
+		cout << endl;
+		cout << "===" << endl;
+		cout << name << endl;
+		cout << desc << endl;
+		cout << endl;
+		cout << "Statystyki na poziomie" << level << ": " << endl;
+		cout << "Energia: " << maxEnergy << endl;
+		cout << "Punkty Zdrowia: " << maxhp << endl;
+		cout << "Atak: " << atk << endl;
+		cout << "Obrona: " << def << endl;
+		cout << actions.at(0).name;
+		cout << actions.at(1).name;
+		cout << endl;
+		displayFullActions();
 	}
 };
