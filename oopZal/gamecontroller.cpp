@@ -129,6 +129,23 @@ public:
         this_thread::sleep_for(2s);
     }
     void checkForEndOfBattle() {
+        if (aliveAllies <= 0) {
+            endGame();
+        }
+        else if (aliveEnemies <= 0) {
+            nextRound();
+        }
+    }
+    void nextRound() {
+        for (int i = 0; i < playerCharacters.size() - 1; i++) {
+            Character& PC = playerCharacters.at(i);
+            PC.xp += accumulatedXP;
+            PC.clearBeforeBattle();
+            PC.checkForLevelUp();
+        }
+
+    }
+    void endGame() {
 
     }
     GameController() {

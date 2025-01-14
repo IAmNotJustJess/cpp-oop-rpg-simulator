@@ -92,19 +92,27 @@ public:
 		}
 		level += 1;
 		xp -= xpNeeded;
-		int oldhp = hp;
-		int olddef = def;
-		int oldatk = atk;
+		int hpHolder = hp;
+		int defHolder = def;
+		int atkHolder = atk;
 		hp *= lvlUpHPRatio;
 		def *= lvlUpDEFRatio;
 		atk *= lvlUpATKRatio;
-		cout << name << endl;
+		cout << endl << name << endl;
 		cout << "Poziom w Gore! " << level - 1 << " -> " << level << endl;
 		cout << "-" << endl;
-		cout << "Punkty Zdrowia: " << oldhp << " -> " << hp << endl;
-		cout << "Atak: " << oldatk << " -> " << atk << endl;
-		cout << "Obrona: " << olddef << " -> " << def << endl;
+		cout << "Punkty Zdrowia: " << hpHolder << " -> " << hp << endl;
+		cout << "Atak: " << atkHolder << " -> " << atk << endl;
+		cout << "Obrona: " << defHolder << " -> " << def << endl << endl;
 		checkForLevelUp();
+	}
+	void clearBeforeBattle() {
+		atk = oldATK;
+		def = oldATK;
+		maxhp = oldMaxHP;
+		oldATK = 0;
+		oldDEF = 0;
+		oldMaxHP = 0;
 	}
 	void scaleToLevel(int toLvl) {
 		for (int i = level; i < toLvl; level++) {

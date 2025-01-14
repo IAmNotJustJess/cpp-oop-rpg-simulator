@@ -3,10 +3,6 @@
   "WorkspaceRootPath": "C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{BAA94677-CC3F-4863-A21B-E4BFAB8CD4C7}|oopZal\\oopZal.vcxproj|C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\gamecontroller.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{BAA94677-CC3F-4863-A21B-E4BFAB8CD4C7}|oopZal\\oopZal.vcxproj|solutionrelative:oopZal\\gamecontroller.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{BAA94677-CC3F-4863-A21B-E4BFAB8CD4C7}|oopZal\\oopZal.vcxproj|C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\characters.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{BAA94677-CC3F-4863-A21B-E4BFAB8CD4C7}|oopZal\\oopZal.vcxproj|solutionrelative:oopZal\\characters.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
@@ -17,6 +13,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{BAA94677-CC3F-4863-A21B-E4BFAB8CD4C7}|oopZal\\oopZal.vcxproj|C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\oopZal.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{BAA94677-CC3F-4863-A21B-E4BFAB8CD4C7}|oopZal\\oopZal.vcxproj|solutionrelative:oopZal\\oopZal.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BAA94677-CC3F-4863-A21B-E4BFAB8CD4C7}|oopZal\\oopZal.vcxproj|C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\gamecontroller.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{BAA94677-CC3F-4863-A21B-E4BFAB8CD4C7}|oopZal\\oopZal.vcxproj|solutionrelative:oopZal\\gamecontroller.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,37 +26,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "characters.cpp",
               "DocumentMoniker": "C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\characters.cpp",
               "RelativeDocumentMoniker": "oopZal\\characters.cpp",
               "ToolTip": "C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\characters.cpp",
               "RelativeToolTip": "oopZal\\characters.cpp",
-              "ViewState": "AgIAABsAAAAAAAAAAAAAADwAAAAQAAAAAAAAAA==",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAAAD0AAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-01-11T21:37:50.52Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 3,
               "Title": "gamecontroller.cpp",
               "DocumentMoniker": "C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\gamecontroller.cpp",
               "RelativeDocumentMoniker": "oopZal\\gamecontroller.cpp",
               "ToolTip": "C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\gamecontroller.cpp",
               "RelativeToolTip": "oopZal\\gamecontroller.cpp",
-              "ViewState": "AgIAAGMAAAAAAAAAAAAAAIMAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAGsAAAAAAAAAAAAQwI4AAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-01-11T21:37:49.335Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "actions.cpp",
               "DocumentMoniker": "C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\actions.cpp",
               "RelativeDocumentMoniker": "oopZal\\actions.cpp",
@@ -69,7 +69,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 2,
               "Title": "oopZal.cpp",
               "DocumentMoniker": "C:\\Users\\justJess\\Documents\\uni\\oop-course-final\\oopZal\\oopZal.cpp",
               "RelativeDocumentMoniker": "oopZal\\oopZal.cpp",
