@@ -108,9 +108,15 @@ public:
 		checkForLevelUp();
 	}
 	void clearBeforeBattle() {
-		atk = oldATK;
-		def = oldATK;
-		maxhp = oldMaxHP;
+		if(oldATK != 0) {
+			atk = oldATK;
+		}
+		if(oldDEF != 0) {
+			def = oldDEF;
+		}
+		if(oldMaxHP != 0) {
+			maxhp = oldMaxHP;
+		}
 		oldATK = 0;
 		oldDEF = 0;
 		oldMaxHP = 0;
@@ -128,10 +134,7 @@ public:
 	int takeDamage(int dmg) {
 		
 		double damage = dmg;
-		cout << damage << "|0|";
 		damage = damage / (def * 0.005 + 1);
-		cout << damage << "|1|";
-		cout << "g" << (def * 0.005 + 1) << "g";
 
 		if (damage < 1) {
 			damage = 1;
@@ -151,14 +154,12 @@ public:
 				break;
 			}
 		}
-		cout << damage << "|2|";
 
 		damage *= totalIncomingMultiplier;
 		random_device rd;
 		mt19937 gen(rd());
 		uniform_int_distribution<> dis(0, 21);
 		damage *= 1 + ((dis(gen) % 21) / 100 - 0.1);
-		cout << damage << "|3|";
 
 		if (damage <= 0) {
 			damage = 1;
@@ -200,7 +201,7 @@ public:
 			return -1;
 		}
 
-		double totalIncomingMultiplier = 0;
+		double totalIncomingMultiplier = 1;
 		for (int i = 0; i < statuses.size(); i++) {
 			Status currentStatus = statuses.at(i);
 			switch (currentStatus.type) {
@@ -208,7 +209,7 @@ public:
 				heal += currentStatus.value;
 				break;
 			case ST_INCOMING_HEAL_MULTIPLIER:
-				totalIncomingMultiplier += currentStatus.multiplier;
+				totalIncomingMultiplier *= currentStatus.multiplier;
 				break;
 			default:
 				break;
@@ -227,7 +228,7 @@ public:
 		}
 		return heal;
 	}
-	void checkStatuses() {
+	void checkStatuses(bool newTurn) {
 
 		if (oldATK == 0) oldATK = atk;
 		if (oldMaxHP == 0) oldMaxHP = maxhp;
@@ -238,9 +239,9 @@ public:
 		def = oldDEF;
 		if (statuses.size() <= 0) return;
 
-		double totalATKMultiplier = 0;
-		double totalMaxHPMultiplier = 0;
-		double totalDEFMultiplier = 0;
+		double totalATKMultiplier = 1;
+		double totalMaxHPMultiplier = 1;
+		double totalDEFMultiplier = 1;
 
 		for (int i = 0; i < statuses.size(); i++) {
 
@@ -250,36 +251,38 @@ public:
 				atk += currentStatus.value;
 				break;
 			case ST_ATK_MULTIPLIER:
-				totalATKMultiplier += currentStatus.multiplier;
+				totalATKMultiplier *= currentStatus.multiplier;
 				break;
 			case ST_MAXHP_VALUE:
 				maxhp += currentStatus.value;
 				break;
 			case ST_MAXHP_MULTIPLIER:
-				totalMaxHPMultiplier += currentStatus.multiplier;
+				totalMaxHPMultiplier *= currentStatus.multiplier;
 				break;
 			case ST_DEF_VALUE:
 				def += currentStatus.value;
 				break;
 			case ST_DEF_MULTIPLIER:
-				totalDEFMultiplier += currentStatus.multiplier;
+				totalDEFMultiplier *= currentStatus.multiplier;
 				break;
 			case ST_DAMAGE_OVER_TIME:
-				takeDamage(currentStatus.value * currentStatus.multiplier);
+				if(newTurn) takeDamage(currentStatus.value * currentStatus.multiplier);
 				break;
 			case ST_HEAL_OVER_TIME:
-				heal(currentStatus.value * currentStatus.multiplier);
+				if(newTurn) heal(currentStatus.value * currentStatus.multiplier);
 				break;
 			}
-			statuses.at(i).endIn -= 1;
+			if(newTurn) statuses.at(i).endIn -= 1;
 		}
 		
 		atk *= totalATKMultiplier;
 		maxhp *= totalMaxHPMultiplier;
 		def *= totalDEFMultiplier;
 		
-		for (int i = statuses.size() - 1; i >= 0; i--) {
-			if (statuses.at(i).endIn < 0) statuses.erase(statuses.begin() + i);
+		if(newTurn) {
+			for (int i = statuses.size() - 1; i >= 0; i--) {
+				if (statuses.at(i).endIn < 0) statuses.erase(statuses.begin() + i);
+			}
 		}
 	}
 	void inflictStatus(Status status, int info) {
@@ -325,22 +328,22 @@ public:
 			int valueHolder = value;
 			value *= current.multiplier;
 			vector<int> affected = vector<int>();
-			switch (current.target) {
+			switch (current.affect) {
 			case AF_SINGLE_TARGET:
 				affected.push_back(attackIndex);
 				break;
 			case AF_BLAST:
-				if (attackIndex >= 1) {
+				if (attackIndex >= 1 && list.at(attackIndex - 1).isAlive) {
 					affected.push_back(attackIndex - 1);
 				}
 				affected.push_back(attackIndex);
-				if (attackIndex < list.size() - 2) {
+				if (attackIndex < list.size() - 2 && list.at(attackIndex + 1).isAlive) {
 					affected.push_back(attackIndex + 1);
 				}
 				break;
 			case AF_AOE:
 				for (int j = 0; j < list.size(); j++) {
-					affected.push_back(j);
+					if(list.at(j).isAlive) affected.push_back(j);
 				}
 				break;
 			case AF_RANDOM:
@@ -348,15 +351,14 @@ public:
 				mt19937 gen(rd());
 				uniform_int_distribution<int> dis(0, list.size() - 1);
 				for (int j = 0; j < current.special; j++) {
-					affected.push_back(int(dis(gen)));
+					int k = dis(gen);
+					if(list.at(k).isAlive) affected.push_back(k);
 				}
 				break;
 			}
 			for (int j = 0; j < affected.size(); j++) {
-				cout << affected.at(j) << "d";
-			}
-			for (int j = 0; j < affected.size(); j++) {
 				Character &who = list.at(affected.at(j));
+				who.checkStatuses(false);
 				switch (current.purpose) {
 				case AP_ATTACK:
 					adv.push_back(ActionDealt(who.name, current.purpose, who.takeDamage(getOutgoingDamage(value))));

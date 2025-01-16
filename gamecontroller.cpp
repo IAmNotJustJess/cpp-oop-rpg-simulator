@@ -30,11 +30,14 @@ public:
         int attack = disAttack(gen);
         int action = disActions(gen);
         vector<ActionDealt> adv = NPC.useAction(NPC.getActions().at(action), playerCharacters, attack);
+        while(!playerCharacters.at(attack).isAlive) {
+            int attack = disAttack(gen);
+        }
         displayActionAgainst(NPC.name, playerCharacters.at(attack).name, NPC.getActions().at(action).name, adv);
         this_thread::sleep_for(1500ms);
     }
     void displayActionAgainst(string caster, string against, string actionName, vector<ActionDealt> adv) {
-        cout << caster << " uzywa " << actionName << " na " << against << endl;
+        cout << endl << caster << " uzywa " << actionName << " na " << against << endl;
         for (int i = 0; i < adv.size(); i++) {
             switch (adv.at(i).purpose) {
             case AP_STATUS:
@@ -47,6 +50,7 @@ public:
                 break;
             }
         }
+        cout << endl;
     }
     void actAsPC(int index) {
         Character& PC = playerCharacters.at(index);
@@ -72,7 +76,7 @@ public:
             if (selectedAction.components.at(0).target == ATG_ALLY) {
                 cout << "Wybierz na ktorym sojuszniku uzyc umiejetnosci (1-" << playerCharacters.size() << "): ";
                 cin >> attack;
-                if (attack <= 0 || attack > playerCharacters.size()) {
+                if (attack <= 0 || attack > playerCharacters.size() || !playerCharacters.at(attack - 1).isAlive) {
                     attack = 0;
                     continue;
                 }
@@ -83,7 +87,7 @@ public:
             else if (selectedAction.components.at(0).target == ATG_ENEMY) {
                 cout << "Wybierz na ktorym przeciwniku uzyc umiejetnosci (1-" << enemyCharacters.size() << "): ";
                 cin >> attack;
-                if (attack <= 0 || attack > playerCharacters.size()) {
+                if (attack <= 0 || attack > enemyCharacters.size() || !enemyCharacters.at(attack - 1).isAlive) {
                     attack = 0;
                     continue;
                 }
@@ -99,32 +103,50 @@ public:
         }
         displayCharacterScreen();
     }
-    void enemysTurn() {
+    int enemysTurn() {
+        if(!playerTurn) return 0;
         playerTurn = false;
+        turnCount += 1;
         cout << "Tura przeciwnika..." << endl;
         for (int i = 0; i < enemyCharacters.size(); i++) {
             Character & ec = enemyCharacters.at(i);
-            ec.checkStatuses();
+            ec.checkStatuses(true);
             if (enemyCharacters.at(i).isAlive) {
                 actAsNPC(i);
+                displayCharacterScreen();
             }
-            checkForEndOfBattle();
+            int out = checkForEndOfBattle();
+            if(out == 1) {
+                return 1;
+            }
+            else if(out == 2) {
+                return 2;
+            }
         }
+        return 0;
     }
-    void playersTurn() {
+    int playersTurn() {
         playerTurn = true;
+        turnCount += 1;
         cout << "Twoja tura!" << endl;
         for (int i = 0; i < playerCharacters.size(); i++) {
-            Character & ec = enemyCharacters.at(i);
-            ec.checkStatuses();
-            if (playerCharacters.at(i).isAlive) {
+            Character & ec = playerCharacters.at(i);
+            ec.checkStatuses(true);
+            if (ec.isAlive) {
                 actAsPC(i);
             }
-            checkForEndOfBattle();
+            int out = checkForEndOfBattle();
+            if(out == 1) {
+                return 1;
+            }
+            else if(out == 2) {
+                return 2;
+            }
         }
-        enemysTurn();
+        return 0;
     }
     void displayCharacterScreen() {
+        cout << "==" << endl << endl;
         for (int i = 0; i < enemyCharacters.size(); i++) {
             Character enemy = enemyCharacters.at(i);
             cout << i + 1 << ": " << enemy.name << endl;
@@ -149,23 +171,24 @@ public:
             }
             cout << "\n";
         }
-        this_thread::sleep_for(2s);
+        this_thread::sleep_for(1.5s);
     }
-    void checkForEndOfBattle() {
-        aliveAllies = 1;
-        aliveEnemies = 1;
+    int checkForEndOfBattle() {
+        aliveAllies = 0;
+        aliveEnemies = 0;
         for(int i = 0; i < enemyCharacters.size(); i++) {
-            if (enemyCharacters.at(i).isAlive) aliveEnemies = 1;
+            if (enemyCharacters.at(i).isAlive) aliveEnemies += 1;
         }
         for(int i = 0; i < playerCharacters.size(); i++) {
-            if (playerCharacters.at(i).isAlive) aliveAllies = 1;
+            if (playerCharacters.at(i).isAlive) aliveAllies += 1;
         }
         if (aliveAllies <= 0) {
-            endGame();
+            return 1;
         }
         else if (aliveEnemies <= 0) {
-            nextRound();
+            return 2;
         }
+        return 0;
     }
     void nextRound() {
         for (int i = 0; i < playerCharacters.size(); i++) {
@@ -174,15 +197,15 @@ public:
             PC.clearBeforeBattle();
             PC.checkForLevelUp();
         }
-        cout << "===" << endl;
+        cout << "===" << endl << endl;
         cout << "Runda " << round << " zakonczona na turze " << turnCount << "." << endl;
-        cout << "===" << endl;
+        cout << "===" << endl << endl;
         cout << "Wcisnij ENTER aby rozpoczac nastepna runde." << endl;
-        char wait;
-        cin >> wait;
+        string wait;
+        getline(cin, wait);
         round += 1;
         turnCount = 0;
-        playerTurn = true;
+        playerTurn = false;
         rollForEnemiesFromTemplates();
         displayCharacterScreen();
         
@@ -257,14 +280,37 @@ public:
         }
         cout << "==" << endl << endl;
         cout << "Zaczynamy!" << endl << endl ;
-        cout << "==" << endl << endl;
 
         rollForEnemiesFromTemplates();
-        cout << "test";
 
         round += 1;
         displayCharacterScreen();
-        playersTurn();
+        gameHandler();
+    }
+    void gameHandler() {
+        bool continueOn = true;
+        while (continueOn) {
+            int pt = playersTurn();
+            switch(pt) {
+                case 1:
+                    endGame();
+                    continueOn = false;
+                    break;
+                case 2:
+                    nextRound();
+                    break;
+            }
+            int et = enemysTurn();
+            switch(et) {
+                case 1:
+                    endGame();
+                    continueOn = false;
+                    break;
+                case 2:
+                    nextRound();
+                    break;
+            }
+        }
     }
     GameController() {
         Character currentCharacter;
