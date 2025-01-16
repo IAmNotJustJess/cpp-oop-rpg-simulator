@@ -21,21 +21,6 @@ public:
     short maxCharactersInTeam = 4;
     short maxSkillPoints = 5;
     short skillPointCount = 3;
-    void actAsNPC(int index) {
-        Character& NPC = enemyCharacters.at(index);
-        random_device rd;
-        mt19937 gen(rd());
-        uniform_int_distribution<int> disAttack(0, playerCharacters.size() - 1);
-        uniform_int_distribution<int> disActions(0, NPC.getActions().size() - 1);
-        int attack = disAttack(gen);
-        int action = disActions(gen);
-        vector<ActionDealt> adv = NPC.useAction(NPC.getActions().at(action), playerCharacters, attack);
-        while(!playerCharacters.at(attack).isAlive) {
-            int attack = disAttack(gen);
-        }
-        displayActionAgainst(NPC.name, playerCharacters.at(attack).name, NPC.getActions().at(action).name, adv);
-        this_thread::sleep_for(1500ms);
-    }
     void displayActionAgainst(string caster, string against, string actionName, vector<ActionDealt> adv) {
         cout << endl << caster << " uzywa " << actionName << " na " << against << endl;
         for (int i = 0; i < adv.size(); i++) {
@@ -52,6 +37,40 @@ public:
         }
         cout << endl;
     }
+    void actAsNPC(int index) {
+        Character& NPC = enemyCharacters.at(index);
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<int> disActions(0, NPC.getActions().size() - 1);
+        int action = disActions(gen);
+        Action selectedAction = NPC.getActions().at(action);
+        while (true) {
+            if (selectedAction.components.at(0).target == ATG_ALLY) {
+                uniform_int_distribution<int> disAttack(0, playerCharacters.size() - 1);
+                int attack = disAttack(gen);
+                while(!playerCharacters.at(attack).isAlive) {
+                    int attack = disAttack(gen);
+                }
+                displayActionAgainst(NPC.name, playerCharacters.at(attack).name, selectedAction.name, NPC.useAction(selectedAction, playerCharacters, attack));
+                break;
+            }
+            else if (selectedAction.components.at(0).target == ATG_ENEMY) {
+                uniform_int_distribution<int> disAttack(0, enemyCharacters.size() - 1);
+                int attack = disAttack(gen);
+                while(!enemyCharacters.at(attack).isAlive) {
+                    int attack = disAttack(gen);
+                }
+                displayActionAgainst(NPC.name, enemyCharacters.at(attack).name, selectedAction.name, NPC.useAction(selectedAction, enemyCharacters, attack));
+                break;
+            }
+            else if (selectedAction.components.at(0).target == ATG_SELF) {
+                int attack = index;
+                displayActionAgainst(NPC.name, "sobie", selectedAction.name, NPC.useAction(selectedAction, enemyCharacters, attack));
+                break;
+            }
+        this_thread::sleep_for(1500ms);
+        }
+    }
     void actAsPC(int index) {
         Character& PC = playerCharacters.at(index);
         cout << "Akcje podejmuje " << PC.name << endl;
@@ -63,7 +82,7 @@ public:
             cout << "Punkty umiejetnosci: " << skillPointCount << endl;
             cout << "Wybierz akcje (1-" << PC.getActions().size() << "): ";
             cin >> action;
-            if (action <= 0 || action > PC.getActions().size() || (PC.getActions().at(action - 1).type == AT_SKILL && skillPointCount < 1) || (PC.getActions().at(action - 1).type == AT_ULTIMATE && PC.energy < PC.maxEnergy)) {
+            if (action <= 0 || action > PC.getActions().size() || (PC.getActions().at(action - 1).type == AT_SKILL && skillPointCount < 1) || (PC.getActions().at(action - 1).type == AT_ULTIMATE && PC.energy != PC.maxEnergy)) {
                 action = 0;
                 continue;
             }
@@ -71,34 +90,31 @@ public:
         }
         vector<ActionDealt> adv;
         action -= 1;
-        cout << action << " " << PC.getActions().at(action).name << endl;
         Action selectedAction = PC.getActions().at(action);
         while (true) {
             if (selectedAction.components.at(0).target == ATG_ALLY) {
                 cout << "Wybierz na ktorym sojuszniku uzyc umiejetnosci (1-" << playerCharacters.size() << "): ";
                 cin >> attack;
                 if (attack <= 0 || attack > playerCharacters.size() || !playerCharacters.at(attack - 1).isAlive) {
-                    attack = 0;
                     continue;
                 }
                 attack -= 1;
-                displayActionAgainst(PC.name, playerCharacters.at(attack).name, selectedAction.name, PC.useAction(selectedAction, playerCharacters, attack));
+                displayActionAgainst(PC.name, playerCharacters.at(action).name, selectedAction.name, PC.useAction(selectedAction, playerCharacters, attack));
                 break;
             }
             else if (selectedAction.components.at(0).target == ATG_ENEMY) {
                 cout << "Wybierz na ktorym przeciwniku uzyc umiejetnosci (1-" << enemyCharacters.size() << "): ";
                 cin >> attack;
                 if (attack <= 0 || attack > enemyCharacters.size() || !enemyCharacters.at(attack - 1).isAlive) {
-                    attack = 0;
                     continue;
                 }
                 attack -= 1;
-                displayActionAgainst(PC.name, enemyCharacters.at(attack).name, PC.getActions().at(attack).name, PC.useAction(selectedAction, enemyCharacters, attack));
+                displayActionAgainst(PC.name, enemyCharacters.at(attack).name, selectedAction.name, PC.useAction(selectedAction, enemyCharacters, attack));
                 break;
             }
             else if (selectedAction.components.at(0).target == ATG_SELF) {
                 attack = index;
-                displayActionAgainst(PC.name, "sobie", PC.getActions().at(attack).name, PC.useAction(selectedAction, playerCharacters, attack));
+                displayActionAgainst(PC.name, "sobie", selectedAction.name, PC.useAction(selectedAction, playerCharacters, attack));
                 break;
             }
         }
@@ -108,13 +124,14 @@ public:
         else if(selectedAction.type == AT_BASIC) {
             skillPointCount += 1;
         }
+        this_thread::sleep_for(1500ms);
         displayCharacterScreen();
     }
     int enemysTurn() {
         if(!playerTurn) return 0;
         playerTurn = false;
         turnCount += 1;
-        cout << "Tura przeciwnika..." << endl;
+        cout << "===" << endl << endl << "Tura przeciwnika..." << endl;
         for (int i = 0; i < enemyCharacters.size(); i++) {
             Character & ec = enemyCharacters.at(i);
             ec.checkStatuses(true);
@@ -135,7 +152,7 @@ public:
     int playersTurn() {
         playerTurn = true;
         turnCount += 1;
-        cout << "Twoja tura!" << endl;
+        cout << "===" << endl << endl << "Twoja tura!" << endl;
         for (int i = 0; i < playerCharacters.size(); i++) {
             Character & ec = playerCharacters.at(i);
             ec.checkStatuses(true);
@@ -158,7 +175,11 @@ public:
             Character enemy = enemyCharacters.at(i);
             cout << i + 1 << ": " << enemy.name << endl;
             if (enemy.isAlive) {
-                cout << "PZ: " << enemy.hp << endl;
+                cout << "PZ: " << enemy.hp;
+                if(enemy.getShield() > 0) {
+                    cout << "+ PT: " << enemy.getShield();
+                }
+                cout << endl;
             }
             else {
                 cout << "PZ: 0 [KO]" << endl;
@@ -170,7 +191,11 @@ public:
             Character player = playerCharacters.at(i);
             cout << i + 1 << ": " << player.name << endl;
             if (player.isAlive) {
-                cout << "PZ: " << player.hp << " / " << player.maxhp << endl;
+                cout << "PZ: " << player.hp << " / " << player.maxhp;
+                if(player.getShield() > 0) {
+                    cout << "+ PT: " << player.getShield();
+                }
+                cout << endl;
                 cout << "Energia: " << player.energy << " / " << player.maxEnergy << endl;
             }
             else {
@@ -228,7 +253,7 @@ public:
         int lvlVariable;
         for(int i = 0; i < team.size(); i++) {
             lvlVariable = dis(gen);
-            lvlVariable - 3;
+            lvlVariable - 4;
             if (lvlVariable <= 0) lvlVariable = 0;
             Character NPC = listOfEnemies.at(team.at(i));
             NPC.scaleToLevel(NPC.level + lvlVariable);
@@ -400,7 +425,7 @@ public:
         {
         currentCharacter = Character(
             "Wojownik",
-            ".",
+            "Profesjonalista walk jeden na jeden.",
             PLAYABLE,
             120,
             20,
@@ -481,7 +506,7 @@ public:
         {
             currentCharacter = Character(
                 "Kleryk",
-                ".",
+                "Twoj aniol stroz.",
                 PLAYABLE,
                 80,
                 12,
@@ -552,7 +577,7 @@ public:
         {
             currentCharacter = Character(
                 "Muzykant",
-                ".",
+                "Magiczny wladca nut.",
                 PLAYABLE,
                 75,
                 14,
@@ -631,12 +656,84 @@ public:
 
             listOfCharacters.push_back(currentCharacter);
         }
+        // Obronca
+        {
+            currentCharacter = Character(
+                "Obronca",
+                "Dzieki niemu, nie dasz rady upasc.",
+                PLAYABLE,
+                95,
+                7,
+                14,
+                120,
+                1,
+                0,
+                1.1,
+                1.3,
+                1.1
+            );
+
+            desc = "Atakuje jednego przeciwnika tarcza zadajac\nobrazenia wynoszace 50% Obrony Obroncy.";
+            action = Action(
+                "Atak Tarcza",
+                desc,
+                AT_BASIC,
+                20,
+                0.5,
+                ATG_ENEMY,
+                AF_SINGLE_TARGET,
+                AP_ATTACK,
+                SCT_DEF,
+                Status(),
+                0
+            );
+
+            currentCharacter.addAction(action);
+
+            desc = "Naklada tarcze na jednym sojuszniku.\nMoc tarczy wynosi 75% Obrony Obroncy.\nTarcza znika po 1 turze.";
+            action = Action(
+                "Nalozenie Ochrony",
+                desc,
+                AT_SKILL,
+                40,
+                0.75,
+                ATG_ALLY,
+                AF_SINGLE_TARGET,
+                AP_STATUS,
+                SCT_DEF,
+                Status(0, 0.75, ST_SHIELDED, 1),
+                0
+            );
+
+            currentCharacter.addAction(action);
+
+            desc = "Naklada tarcze na wszystkich sojusznikach.\nMoc tarczy wynosi 150% Obrony Obroncy.\nTarcza znika po 2 turach.";
+            action = Action(
+                "Egida",
+                desc,
+                AT_ULTIMATE,
+                15,
+                1.5,
+                ATG_ALLY,
+                AF_AOE,
+                AP_STATUS,
+                SCT_DEF,
+                Status(0, 1.5, ST_OUTGOING_DMG_MULTIPLIER, 2),
+                0
+            );
+
+            currentCharacter.addAction(action);
+
+            listOfCharacters.push_back(currentCharacter);
+        }
+        
+
 
         // Non-Playable
-        // Zloczynca 1
+        // Bandyta
         {
         currentCharacter = Character(
-            "Zloczynca 1",
+            "Bandyta",
             "Zly pan...",
             NON_PLAYABLE,
             40,
@@ -668,7 +765,7 @@ public:
         currentCharacter.addAction(action);
 
         action = Action(
-            "Uderzenie Mieczem",
+            "Ciachniecie Mieczem",
             desc,
             AT_BASIC,
             0,
@@ -684,27 +781,156 @@ public:
         currentCharacter.addAction(action);
 
         listOfEnemies.push_back(currentCharacter);
-    }
+        }
+        // Bandycki Lucznik
+        {
+        currentCharacter = Character(
+            "Bandycki Lucznik",
+            "Zly pan...",
+            NON_PLAYABLE,
+            40,
+            12,
+            6,
+            0,
+            1,
+            0,
+            1.2,
+            1.2,
+            1.1
+        );
+
+        desc = "Atakuje jednego przeciwnika zadajac\nobrazenia wynoszace 100% Ataku.";
+        action = Action(
+            "Strzal Lukiem",
+            desc,
+            AT_BASIC,
+            0,
+            1.0,
+            ATG_ALLY,
+            AF_SINGLE_TARGET,
+            AP_ATTACK,
+            SCT_ATK,
+            Status(),
+            0
+        );
+
+        currentCharacter.addAction(action);
+
+        action = Action(
+            "Wybuchowa Strzala",
+            desc,
+            AT_BASIC,
+            0,
+            0.6,
+            ATG_ALLY,
+            AF_AOE,
+            AP_ATTACK,
+            SCT_ATK,
+            Status(),
+            0
+        );
         
+        currentCharacter.addAction(action);
+
+        listOfEnemies.push_back(currentCharacter);
+        }
+        // Bandycki Mag
+        {
+        currentCharacter = Character(
+            "Bandycki Lucznik",
+            "Zly pan...",
+            NON_PLAYABLE,
+            30,
+            10,
+            6,
+            0,
+            1,
+            0,
+            1.4,
+            1.4,
+            1.1
+        );
+
+        desc = "Atakuje jednego przeciwnika zadajac\nobrazenia wynoszace 100% Ataku.";
+        action = Action(
+            "Uleczenie",
+            desc,
+            AT_BASIC,
+            0,
+            1.0,
+            ATG_ENEMY,
+            AF_SINGLE_TARGET,
+            AP_HEAL,
+            SCT_ATK,
+            Status(),
+            0
+        );
+
+        currentCharacter.addAction(action);
+
+        action = Action(
+            "Kula Zla",
+            desc,
+            AT_BASIC,
+            0,
+            0.3,
+            ATG_ALLY,
+            AF_SINGLE_TARGET,
+            AP_ATTACK,
+            SCT_ATK,
+            Status(),
+            0
+        );
+        
+        currentCharacter.addAction(action);
+
+        listOfEnemies.push_back(currentCharacter);
+        }
+
         // Szablony
         {
             vector<int> v;
 
             v.push_back(0);
-            v.push_back(0);
-            v.push_back(0);
-            enemyTeamTemplates.push_back(v);
-            v.clear();
-
-            v.push_back(0);
+            v.push_back(1);
             v.push_back(0);
             enemyTeamTemplates.push_back(v);
             v.clear();
 
             v.push_back(0);
             v.push_back(0);
+            enemyTeamTemplates.push_back(v);
+            v.clear();
+
+            v.push_back(1);
             v.push_back(0);
             v.push_back(0);
+            v.push_back(1);
+            enemyTeamTemplates.push_back(v);
+            v.clear();
+
+            v.push_back(0);
+            v.push_back(1);
+            v.push_back(2);
+            v.push_back(1);
+            enemyTeamTemplates.push_back(v);
+            v.clear();
+
+            v.push_back(2);
+            v.push_back(1);
+            v.push_back(0);
+            v.push_back(1);
+            v.push_back(2);
+            enemyTeamTemplates.push_back(v);
+            v.clear();
+
+            v.push_back(0);
+            v.push_back(2);
+            enemyTeamTemplates.push_back(v);
+            v.clear();
+
+            v.push_back(1);
+            v.push_back(1);
             enemyTeamTemplates.push_back(v);
             v.clear();
         }

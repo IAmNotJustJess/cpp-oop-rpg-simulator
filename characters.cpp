@@ -278,13 +278,12 @@ public:
 				if(newTurn) heal(currentStatus.value * currentStatus.multiplier);
 				break;
 			}
-			if(newTurn) statuses.at(i).endIn -= 1;
 		}
 		
 		atk *= totalATKMultiplier;
 		maxhp *= totalMaxHPMultiplier;
 		def *= totalDEFMultiplier;
-		
+
 		if(newTurn) {
 			for (int i = statuses.size() - 1; i >= 0; i--) {
 				if (statuses.at(i).endIn < 0) statuses.erase(statuses.begin() + i);
@@ -292,14 +291,43 @@ public:
 		}
 	}
 	void inflictStatus(Status status, int info) {
+		bool found = false;
 		switch (status.type) {
 		default:
+			found = false;
+			for(int i = 0; i < statuses.size(); i++) {
+				Status& st = statuses.at(i);
+				if(st.multiplier == status.multiplier && st.type == status.type && status.value == st.value) {
+					st.endIn = status.endIn;
+					found = true;
+					break;
+				}
+			}
+			if(!found) {
+				statuses.push_back(status);
+			}
+			break;
+		case ST_SHIELDED:
+			found = false;
+			status.value = info;
+			for(int i = 0; i < statuses.size(); i++) {
+				Status& st = statuses.at(i);
+				if(st.value <= status.value && st.multiplier == status.multiplier) {
+					st.value = status.value;
+					st.endIn = status.endIn;
+					found = true;
+					break;
+				}
+			}
+			if(!found) {
+				statuses.push_back(status);
+			}
+			break;
+		case ST_DAMAGE_OVER_TIME: case ST_HEAL_OVER_TIME:
+			status.value = info;
 			statuses.push_back(status);
 			break;
-		case ST_DAMAGE_OVER_TIME:
-			status.value = info;
-		}
-		statuses.push_back(status);
+		}	
 	}
 	void addAction(Action action) {
 		actions.push_back(action);
