@@ -461,7 +461,7 @@ public:
 			Action action = actions.at(i);
 			switch (action.type) {
 			case AT_BASIC:
-				cout << "1. " << action.name << endl;
+				cout << "1.  " << action.name << endl;
 				cout << "Regeneruje punkt umiejetnosci." << endl;
 				break;
 			case AT_SKILL:

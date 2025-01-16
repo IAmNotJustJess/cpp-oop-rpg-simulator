@@ -1,6 +1,6 @@
 #include "characters.cpp"
-#include <thread>
 #include <sstream>
+#include <thread>
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -68,7 +68,6 @@ public:
                 displayActionAgainst(NPC.name, "sobie", selectedAction.name, NPC.useAction(selectedAction, enemyCharacters, attack));
                 break;
             }
-        this_thread::sleep_for(1500ms);
         }
     }
     void actAsPC(int index) {
@@ -99,7 +98,7 @@ public:
                     continue;
                 }
                 attack -= 1;
-                displayActionAgainst(PC.name, playerCharacters.at(action).name, selectedAction.name, PC.useAction(selectedAction, playerCharacters, attack));
+                displayActionAgainst(PC.name, playerCharacters.at(attack).name, selectedAction.name, PC.useAction(selectedAction, playerCharacters, attack));
                 break;
             }
             else if (selectedAction.components.at(0).target == ATG_ENEMY) {
@@ -123,8 +122,10 @@ public:
         }
         else if(selectedAction.type == AT_BASIC) {
             skillPointCount += 1;
+            if (skillPointCount >= maxSkillPoints) {
+                skillPointCount = maxSkillPoints;
+            }
         }
-        this_thread::sleep_for(1500ms);
         displayCharacterScreen();
     }
     int enemysTurn() {
@@ -137,6 +138,7 @@ public:
             ec.checkStatuses(true);
             if (enemyCharacters.at(i).isAlive) {
                 actAsNPC(i);
+                this_thread::sleep_for(500ms);
                 displayCharacterScreen();
             }
             int out = checkForEndOfBattle();
