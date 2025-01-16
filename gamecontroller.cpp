@@ -60,9 +60,10 @@ public:
         int action = 0;
         int attack = 0;
         while (true) {
-            cout << "Wybierz akcje (1-3): ";
+            cout << "Punkty umiejetnosci: " << skillPointCount << endl;
+            cout << "Wybierz akcje (1-" << PC.getActions().size() << "): ";
             cin >> action;
-            if (action <= 0 || action > 3) {
+            if (action <= 0 || action > PC.getActions().size() || (PC.getActions().at(action - 1).type == AT_SKILL && skillPointCount < 1) || (PC.getActions().at(action - 1).type == AT_ULTIMATE && PC.energy < PC.maxEnergy)) {
                 action = 0;
                 continue;
             }
@@ -100,6 +101,12 @@ public:
                 displayActionAgainst(PC.name, "sobie", PC.getActions().at(attack).name, PC.useAction(selectedAction, playerCharacters, attack));
                 break;
             }
+        }
+        if(selectedAction.type == AT_SKILL) {
+            skillPointCount -= 1;
+        }
+        else if(selectedAction.type == AT_BASIC) {
+            skillPointCount += 1;
         }
         displayCharacterScreen();
     }
@@ -246,7 +253,7 @@ public:
 
         cout << endl << "Twoja druzyna bedzie sie skladac z " << maxCharactersInTeam << " postaci." << endl << endl;
         cout << "Wpisz 'info <numer>' by dowiedziec sie wiecej o tej postaci." << endl;
-        cout << "Wpisz <numer> postaci by ja wybrac." << endl << endl;
+        cout << "Wpisz '<numer>' postaci by ja wybrac." << endl << endl;
     }
     void startGame() {
         cout << "===" << endl << endl;

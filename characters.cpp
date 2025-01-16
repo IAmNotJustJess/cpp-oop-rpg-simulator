@@ -131,6 +131,12 @@ public:
 			xp *= 1.2;
 		}
 	}
+	void addEnergy(int en) {
+		energy += en;
+		if(energy >= maxEnergy) {
+			energy = maxEnergy;
+		}
+	}
 	int takeDamage(int dmg) {
 		
 		double damage = dmg;
@@ -358,6 +364,7 @@ public:
 			}
 			for (int j = 0; j < affected.size(); j++) {
 				Character &who = list.at(affected.at(j));
+				who.addEnergy(5);
 				who.checkStatuses(false);
 				switch (current.purpose) {
 				case AP_ATTACK:
