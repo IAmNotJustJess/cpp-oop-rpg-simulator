@@ -210,8 +210,11 @@ public:
     int checkForEndOfBattle() {
         aliveAllies = 0;
         aliveEnemies = 0;
+        accumulatedXP = 0;
         for(int i = 0; i < enemyCharacters.size(); i++) {
-            if (enemyCharacters.at(i).isAlive) aliveEnemies += 1;
+            if (enemyCharacters.at(i).isAlive) {
+                aliveEnemies += 1;
+                accumulatedXP += enemyCharacters.at(i).xp;
         }
         for(int i = 0; i < playerCharacters.size(); i++) {
             if (playerCharacters.at(i).isAlive) aliveAllies += 1;
@@ -231,6 +234,7 @@ public:
             PC.clearBeforeBattle();
             PC.checkForLevelUp();
         }
+        accumulatedXP = 0;
         cout << "===" << endl << endl;
         cout << "Runda " << round << " zakonczona na turze " << turnCount << "." << endl;
         cout << "===" << endl << endl;
