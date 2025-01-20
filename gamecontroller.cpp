@@ -215,6 +215,7 @@ public:
             if (enemyCharacters.at(i).isAlive) {
                 aliveEnemies += 1;
                 accumulatedXP += enemyCharacters.at(i).xp;
+            }
         }
         for(int i = 0; i < playerCharacters.size(); i++) {
             if (playerCharacters.at(i).isAlive) aliveAllies += 1;
