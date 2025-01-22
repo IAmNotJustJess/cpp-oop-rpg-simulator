@@ -235,6 +235,7 @@ public:
             PC.clearBeforeBattle();
             PC.checkForLevelUp();
         }
+        skillPointCount = maxSkillPoints / 2 + 1;
         accumulatedXP = 0;
         cout << "===" << endl << endl;
         cout << "Runda " << round << " zakonczona na turze " << turnCount << "." << endl << endl;
