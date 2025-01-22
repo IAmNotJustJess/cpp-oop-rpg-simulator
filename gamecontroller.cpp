@@ -48,7 +48,7 @@ public:
             if (selectedAction.components.at(0).target == ATG_ALLY) {
                 uniform_int_distribution<int> disAttack(0, playerCharacters.size() - 1);
                 int attack = disAttack(gen);
-                while(!playerCharacters.at(attack).isAlive) {
+                while (!playerCharacters.at(attack).isAlive) {
                     int attack = disAttack(gen);
                 }
                 displayActionAgainst(NPC.name, playerCharacters.at(attack).name, selectedAction.name, NPC.useAction(selectedAction, playerCharacters, attack));
@@ -57,7 +57,7 @@ public:
             else if (selectedAction.components.at(0).target == ATG_ENEMY) {
                 uniform_int_distribution<int> disAttack(0, enemyCharacters.size() - 1);
                 int attack = disAttack(gen);
-                while(!enemyCharacters.at(attack).isAlive) {
+                while (!enemyCharacters.at(attack).isAlive) {
                     int attack = disAttack(gen);
                 }
                 displayActionAgainst(NPC.name, enemyCharacters.at(attack).name, selectedAction.name, NPC.useAction(selectedAction, enemyCharacters, attack));
@@ -117,10 +117,10 @@ public:
                 break;
             }
         }
-        if(selectedAction.type == AT_SKILL) {
+        if (selectedAction.type == AT_SKILL) {
             skillPointCount -= 1;
         }
-        else if(selectedAction.type == AT_BASIC) {
+        else if (selectedAction.type == AT_BASIC) {
             skillPointCount += 1;
             if (skillPointCount >= maxSkillPoints) {
                 skillPointCount = maxSkillPoints;
@@ -129,12 +129,12 @@ public:
         displayCharacterScreen();
     }
     int enemysTurn() {
-        if(!playerTurn) return 0;
+        if (!playerTurn) return 0;
         playerTurn = false;
         turnCount += 1;
         cout << "===" << endl << endl << "Tura przeciwnika..." << endl;
         for (int i = 0; i < enemyCharacters.size(); i++) {
-            Character & ec = enemyCharacters.at(i);
+            Character& ec = enemyCharacters.at(i);
             ec.checkStatuses(true);
             if (enemyCharacters.at(i).isAlive) {
                 actAsNPC(i);
@@ -142,10 +142,10 @@ public:
                 displayCharacterScreen();
             }
             int out = checkForEndOfBattle();
-            if(out == 1) {
+            if (out == 1) {
                 return 1;
             }
-            else if(out == 2) {
+            else if (out == 2) {
                 return 2;
             }
         }
@@ -156,16 +156,16 @@ public:
         turnCount += 1;
         cout << "===" << endl << endl << "Twoja tura!" << endl;
         for (int i = 0; i < playerCharacters.size(); i++) {
-            Character & ec = playerCharacters.at(i);
+            Character& ec = playerCharacters.at(i);
             ec.checkStatuses(true);
             if (ec.isAlive) {
                 actAsPC(i);
             }
             int out = checkForEndOfBattle();
-            if(out == 1) {
+            if (out == 1) {
                 return 1;
             }
-            else if(out == 2) {
+            else if (out == 2) {
                 return 2;
             }
         }
@@ -178,7 +178,7 @@ public:
             cout << i + 1 << ": " << enemy.name << endl;
             if (enemy.isAlive) {
                 cout << "PZ: " << enemy.hp;
-                if(enemy.getShield() > 0) {
+                if (enemy.getShield() > 0) {
                     cout << "+ PT: " << enemy.getShield();
                 }
                 cout << endl;
@@ -194,7 +194,7 @@ public:
             cout << i + 1 << ": " << player.name << endl;
             if (player.isAlive) {
                 cout << "PZ: " << player.hp << " / " << player.maxhp;
-                if(player.getShield() > 0) {
+                if (player.getShield() > 0) {
                     cout << "+ PT: " << player.getShield();
                 }
                 cout << endl;
@@ -211,13 +211,13 @@ public:
         aliveAllies = 0;
         aliveEnemies = 0;
         accumulatedXP = 0;
-        for(int i = 0; i < enemyCharacters.size(); i++) {
+        for (int i = 0; i < enemyCharacters.size(); i++) {
+            accumulatedXP += enemyCharacters.at(i).xp;
             if (enemyCharacters.at(i).isAlive) {
                 aliveEnemies += 1;
-                accumulatedXP += enemyCharacters.at(i).xp;
             }
         }
-        for(int i = 0; i < playerCharacters.size(); i++) {
+        for (int i = 0; i < playerCharacters.size(); i++) {
             if (playerCharacters.at(i).isAlive) aliveAllies += 1;
         }
         if (aliveAllies <= 0) {
@@ -237,17 +237,17 @@ public:
         }
         accumulatedXP = 0;
         cout << "===" << endl << endl;
-        cout << "Runda " << round << " zakonczona na turze " << turnCount << "." << endl;
+        cout << "Runda " << round << " zakonczona na turze " << turnCount << "." << endl << endl;
         cout << "===" << endl << endl;
-        cout << "Wcisnij ENTER aby rozpoczac nastepna runde." << endl;
+        cout << "Napisz cokolwiek i wcisnij ENTER aby rozpoczac nastepna runde." << endl;
         string wait;
-        getline(cin, wait);
+        cin >> wait;
         round += 1;
         turnCount = 0;
         playerTurn = false;
         rollForEnemiesFromTemplates();
         displayCharacterScreen();
-        
+
     }
     void rollForEnemiesFromTemplates() {
         enemyCharacters.clear();
@@ -258,7 +258,7 @@ public:
         vector<int> team = enemyTeamTemplates.at(id);
         uniform_int_distribution<int> dis(1, 5);
         int lvlVariable;
-        for(int i = 0; i < team.size(); i++) {
+        for (int i = 0; i < team.size(); i++) {
             lvlVariable = dis(gen);
             lvlVariable - 4;
             if (lvlVariable <= 0) lvlVariable = 0;
@@ -279,7 +279,7 @@ public:
     void chooseTeamText() {
         cout << "Dobierz swoja druzyne z tych postaci:" << endl;
 
-        for(int i = 0; i < listOfCharacters.size(); i++) {
+        for (int i = 0; i < listOfCharacters.size(); i++) {
             cout << i + 1 << ": " << listOfCharacters.at(i).name << endl;
         }
 
@@ -295,13 +295,13 @@ public:
         while (playerCharacters.size() < 4) {
             string str;
             getline(cin, str);
-            if(str.find(" ") != string::npos) {
+            if (str.find(" ") != string::npos) {
                 string substr = str.substr(0, str.find(" "));
                 string substr2 = str.substr(str.find(" ") + 1, str.length() - 1);
-                if(substr == "info") {
+                if (substr == "info") {
                     int id = stoi(substr2);
                     id -= 1;
-                    if(id < 0 || id > listOfCharacters.size()) continue;
+                    if (id < 0 || id > listOfCharacters.size()) continue;
                     listOfCharacters.at(id).displayInfo();
                     this_thread::sleep_for(1500ms);
                     chooseTeamText();
@@ -310,7 +310,7 @@ public:
             else {
                 int id = stoi(str);
                 id -= 1;
-                if(id < 0 || id > listOfCharacters.size()) continue;
+                if (id < 0 || id > listOfCharacters.size()) continue;
                 playerCharacters.push_back(listOfCharacters.at(id));
                 cout << endl << "===" << endl << endl;
                 cout << "Dodano " << listOfCharacters.at(id).name << " do druzyny" << endl << endl;
@@ -318,7 +318,7 @@ public:
             }
         }
         cout << "==" << endl << endl;
-        cout << "Zaczynamy!" << endl << endl ;
+        cout << "Zaczynamy!" << endl << endl;
 
         rollForEnemiesFromTemplates();
 
@@ -330,24 +330,24 @@ public:
         bool continueOn = true;
         while (continueOn) {
             int pt = playersTurn();
-            switch(pt) {
-                case 1:
-                    endGame();
-                    continueOn = false;
-                    break;
-                case 2:
-                    nextRound();
-                    break;
+            switch (pt) {
+            case 1:
+                endGame();
+                continueOn = false;
+                break;
+            case 2:
+                nextRound();
+                break;
             }
             int et = enemysTurn();
-            switch(et) {
-                case 1:
-                    endGame();
-                    continueOn = false;
-                    break;
-                case 2:
-                    nextRound();
-                    break;
+            switch (et) {
+            case 1:
+                endGame();
+                continueOn = false;
+                break;
+            case 2:
+                nextRound();
+                break;
             }
         }
     }
@@ -416,7 +416,7 @@ public:
                 10,
                 4.0,
                 ATG_ENEMY,
-                AF_SINGLE_TARGET,
+                AF_AOE,
                 AP_ATTACK,
                 SCT_ATK,
                 Status(),
@@ -430,85 +430,85 @@ public:
         }
         // Wojownik
         {
-        currentCharacter = Character(
-            "Wojownik",
-            "Profesjonalista walk jeden na jeden.",
-            PLAYABLE,
-            120,
-            20,
-            8,
-            100,
-            1,
-            0,
-            1.1,
-            1.25,
-            1.15
-        );
+            currentCharacter = Character(
+                "Wojownik",
+                "Profesjonalista walk jeden na jeden.",
+                PLAYABLE,
+                120,
+                20,
+                8,
+                100,
+                1,
+                0,
+                1.1,
+                1.25,
+                1.15
+            );
 
-        desc = "Atakuje jednego przeciwnika mieczem zadajac\nobrazenia wynoszace 150% Ataku Wojownika.";
-        action = Action(
-            "Uderzenie Mieczem",
-            desc,
-            AT_BASIC,
-            20,
-            1.5,
-            ATG_ENEMY,
-            AF_SINGLE_TARGET,
-            AP_ATTACK,
-            SCT_ATK,
-            Status(),
-            0
-        );
+            desc = "Atakuje jednego przeciwnika mieczem zadajac\nobrazenia wynoszace 150% Ataku Wojownika.";
+            action = Action(
+                "Uderzenie Mieczem",
+                desc,
+                AT_BASIC,
+                20,
+                1.5,
+                ATG_ENEMY,
+                AF_SINGLE_TARGET,
+                AP_ATTACK,
+                SCT_ATK,
+                Status(),
+                0
+            );
 
-        currentCharacter.addAction(action);
+            currentCharacter.addAction(action);
 
-        desc = "Atakuje jednego przeciwnika mieczem, zadajac\nobrazenia wynoszace 350% Ataku Wojownika.\n";
-        desc += "Dodatkowo oslabia przeciwnika, obnizajac\njego Obrone o 25%, ten efekt trwa 2 tury.";
-        action = Action(
-            "Przebijajacy Atak",
-            desc,
-            AT_SKILL,
-            40,
-            3.5,
-            ATG_ENEMY,
-            AF_SINGLE_TARGET,
-            AP_ATTACK,
-            SCT_ATK,
-            Status(0, 0.75, ST_DEF_MULTIPLIER, 2),
-            0
-        );
+            desc = "Atakuje jednego przeciwnika mieczem, zadajac\nobrazenia wynoszace 350% Ataku Wojownika.\n";
+            desc += "Dodatkowo oslabia przeciwnika, obnizajac\njego Obrone o 25%, ten efekt trwa 2 tury.";
+            action = Action(
+                "Przebijajacy Atak",
+                desc,
+                AT_SKILL,
+                40,
+                3.5,
+                ATG_ENEMY,
+                AF_SINGLE_TARGET,
+                AP_ATTACK,
+                SCT_ATK,
+                Status(0, 0.75, ST_DEF_MULTIPLIER, 2),
+                0
+            );
 
-        currentCharacter.addAction(action);
+            currentCharacter.addAction(action);
 
-        desc = "Atakuje jednego przeciwnika, zadajac\nobrazenia wynoszace 450% Ataku Wojownika.\n";
-        desc += "Dodatkowo zwieksza Atak Wojownika\no 40% na 2 tury.";
-        action = Action(
-            "Wojownicza Szarza",
-            desc,
-            AT_ULTIMATE,
-            10,
-            4.5,
-            ATG_ENEMY,
-            AF_SINGLE_TARGET,
-            AP_ATTACK,
-            SCT_ATK,
-            Status(),
-            0
-        );
-        action.addComponent(
-            1.4,
-            ATG_SELF,
-            AF_SINGLE_TARGET,
-            AP_STATUS,
-            SCT_ATK,
-            Status(0, 1.4, ST_ATK_MULTIPLIER, 2),
-            0
-        );
+            desc = "Atakuje jednego przeciwnika, zadajac\nobrazenia wynoszace 450% Ataku Wojownika.\n";
+            desc += "Dodatkowo zwieksza Atak Wojownika\no 40% na 2 tury.";
+            action = Action(
+                "Wojownicza Szarza",
+                desc,
+                AT_ULTIMATE,
+                10,
+                4.5,
+                ATG_ENEMY,
+                AF_SINGLE_TARGET,
+                AP_ATTACK,
+                SCT_ATK,
+                Status(),
+                0
+            );
+            action.addComponent(
+                1.4,
+                ATG_SELF,
+                AF_SINGLE_TARGET,
+                AP_STATUS,
+                SCT_ATK,
+                Status(0, 1.4, ST_ATK_MULTIPLIER, 2),
+                0
+            );
 
-        currentCharacter.addAction(action);
+            currentCharacter.addAction(action);
 
-        listOfCharacters.push_back(currentCharacter);
-    }
+            listOfCharacters.push_back(currentCharacter);
+        }
         // Kleryk
         {
             currentCharacter = Character(
@@ -733,165 +733,165 @@ public:
 
             listOfCharacters.push_back(currentCharacter);
         }
-        
+
 
 
         // Non-Playable
         // Bandyta
         {
-        currentCharacter = Character(
-            "Bandyta",
-            "Zly pan...",
-            NON_PLAYABLE,
-            40,
-            20,
-            6,
-            0,
-            1,
-            0,
-            1.4,
-            1.1,
-            1.1
-        );
+            currentCharacter = Character(
+                "Bandyta",
+                "Zly pan...",
+                NON_PLAYABLE,
+                40,
+                20,
+                6,
+                0,
+                1,
+                50,
+                1.4,
+                1.1,
+                1.1
+            );
 
-        desc = "Atakuje jednego przeciwnika zadajac\nobrazenia wynoszace 100% Ataku.";
-        action = Action(
-            "Uderzenie Mieczem",
-            desc,
-            AT_BASIC,
-            0,
-            1.0,
-            ATG_ALLY,
-            AF_SINGLE_TARGET,
-            AP_ATTACK,
-            SCT_ATK,
-            Status(),
-            0
-        );
+            desc = "Atakuje jednego przeciwnika zadajac\nobrazenia wynoszace 100% Ataku.";
+            action = Action(
+                "Uderzenie Mieczem",
+                desc,
+                AT_BASIC,
+                0,
+                1.0,
+                ATG_ALLY,
+                AF_SINGLE_TARGET,
+                AP_ATTACK,
+                SCT_ATK,
+                Status(),
+                0
+            );
 
-        currentCharacter.addAction(action);
+            currentCharacter.addAction(action);
 
-        action = Action(
-            "Ciachniecie Mieczem",
-            desc,
-            AT_BASIC,
-            0,
-            0.75,
-            ATG_ALLY,
-            AF_BLAST,
-            AP_ATTACK,
-            SCT_ATK,
-            Status(),
-            0
-        );
-        
-        currentCharacter.addAction(action);
+            action = Action(
+                "Ciachniecie Mieczem",
+                desc,
+                AT_BASIC,
+                0,
+                0.75,
+                ATG_ALLY,
+                AF_BLAST,
+                AP_ATTACK,
+                SCT_ATK,
+                Status(),
+                0
+            );
 
-        listOfEnemies.push_back(currentCharacter);
+            currentCharacter.addAction(action);
+
+            listOfEnemies.push_back(currentCharacter);
         }
         // Bandycki Lucznik
         {
-        currentCharacter = Character(
-            "Bandycki Lucznik",
-            "Zly pan...",
-            NON_PLAYABLE,
-            40,
-            12,
-            6,
-            0,
-            1,
-            0,
-            1.2,
-            1.2,
-            1.1
-        );
+            currentCharacter = Character(
+                "Bandycki Lucznik",
+                "Zly pan...",
+                NON_PLAYABLE,
+                40,
+                12,
+                6,
+                0,
+                1,
+                30,
+                1.2,
+                1.2,
+                1.1
+            );
 
-        desc = "Atakuje jednego przeciwnika zadajac\nobrazenia wynoszace 100% Ataku.";
-        action = Action(
-            "Strzal Lukiem",
-            desc,
-            AT_BASIC,
-            0,
-            1.0,
-            ATG_ALLY,
-            AF_SINGLE_TARGET,
-            AP_ATTACK,
-            SCT_ATK,
-            Status(),
-            0
-        );
+            desc = "Atakuje jednego przeciwnika zadajac\nobrazenia wynoszace 100% Ataku.";
+            action = Action(
+                "Strzal Lukiem",
+                desc,
+                AT_BASIC,
+                0,
+                1.0,
+                ATG_ALLY,
+                AF_SINGLE_TARGET,
+                AP_ATTACK,
+                SCT_ATK,
+                Status(),
+                0
+            );
 
-        currentCharacter.addAction(action);
+            currentCharacter.addAction(action);
 
-        action = Action(
-            "Wybuchowa Strzala",
-            desc,
-            AT_BASIC,
-            0,
-            0.6,
-            ATG_ALLY,
-            AF_AOE,
-            AP_ATTACK,
-            SCT_ATK,
-            Status(),
-            0
-        );
-        
-        currentCharacter.addAction(action);
+            action = Action(
+                "Wybuchowa Strzala",
+                desc,
+                AT_BASIC,
+                0,
+                0.6,
+                ATG_ALLY,
+                AF_AOE,
+                AP_ATTACK,
+                SCT_ATK,
+                Status(),
+                0
+            );
 
-        listOfEnemies.push_back(currentCharacter);
+            currentCharacter.addAction(action);
+
+            listOfEnemies.push_back(currentCharacter);
         }
         // Bandycki Mag
         {
-        currentCharacter = Character(
-            "Bandycki Lucznik",
-            "Zly pan...",
-            NON_PLAYABLE,
-            30,
-            10,
-            6,
-            0,
-            1,
-            0,
-            1.4,
-            1.4,
-            1.1
-        );
+            currentCharacter = Character(
+                "Bandycki Lucznik",
+                "Zly pan...",
+                NON_PLAYABLE,
+                30,
+                10,
+                6,
+                0,
+                1,
+                50,
+                1.4,
+                1.4,
+                1.1
+            );
 
-        desc = "Atakuje jednego przeciwnika zadajac\nobrazenia wynoszace 100% Ataku.";
-        action = Action(
-            "Uleczenie",
-            desc,
-            AT_BASIC,
-            0,
-            1.0,
-            ATG_ENEMY,
-            AF_SINGLE_TARGET,
-            AP_HEAL,
-            SCT_ATK,
-            Status(),
-            0
-        );
+            desc = "Atakuje jednego przeciwnika zadajac\nobrazenia wynoszace 100% Ataku.";
+            action = Action(
+                "Uleczenie",
+                desc,
+                AT_BASIC,
+                0,
+                1.0,
+                ATG_ENEMY,
+                AF_SINGLE_TARGET,
+                AP_HEAL,
+                SCT_ATK,
+                Status(),
+                0
+            );
 
-        currentCharacter.addAction(action);
+            currentCharacter.addAction(action);
 
-        action = Action(
-            "Kula Zla",
-            desc,
-            AT_BASIC,
-            0,
-            0.3,
-            ATG_ALLY,
-            AF_SINGLE_TARGET,
-            AP_ATTACK,
-            SCT_ATK,
-            Status(),
-            0
-        );
-        
-        currentCharacter.addAction(action);
+            action = Action(
+                "Kula Zla",
+                desc,
+                AT_BASIC,
+                0,
+                0.3,
+                ATG_ALLY,
+                AF_SINGLE_TARGET,
+                AP_ATTACK,
+                SCT_ATK,
+                Status(),
+                0
+            );
 
-        listOfEnemies.push_back(currentCharacter);
+            currentCharacter.addAction(action);
+
+            listOfEnemies.push_back(currentCharacter);
         }
 
         // Szablony

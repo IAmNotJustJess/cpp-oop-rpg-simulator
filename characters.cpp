@@ -86,26 +86,29 @@ public:
 		if (type != PLAYABLE) return;
 
 		int xpNeeded = 175 * level;
+		hp = maxhp;
 
 		if (xp < xpNeeded) return;
+		while (xp >= xpNeeded) {
+			level += 1;
+			int xpNeeded = 175 * level;
+			xp -= xpNeeded;
+			int hpHolder = maxhp;
+			int defHolder = def;
+			int atkHolder = atk;
+			maxhp *= lvlUpHPRatio;
+			hp = maxhp;
+			def *= lvlUpDEFRatio;
+			atk *= lvlUpATKRatio;
 
-		level += 1;
-		xp -= xpNeeded;
-		int hpHolder = hp;
-		int defHolder = def;
-		int atkHolder = atk;
-		hp *= lvlUpHPRatio;
-		def *= lvlUpDEFRatio;
-		atk *= lvlUpATKRatio;
-
-		cout << endl << name << endl;
-		cout << "Poziom w Gore! " << level - 1 << " -> " << level << endl;
-		cout << "-" << endl;
-		cout << "Punkty Zdrowia: " << hpHolder << " -> " << hp << endl;
-		cout << "Atak: " << atkHolder << " -> " << atk << endl;
-		cout << "Obrona: " << defHolder << " -> " << def << endl << endl;
+			cout << endl << name << endl;
+			cout << "Poziom w Gore! " << level - 1 << " -> " << level << endl;
+			cout << "---" << endl;
+			cout << "Punkty Zdrowia: " << hpHolder << " -> " << maxhp << endl;
+			cout << "Atak: " << atkHolder << " -> " << atk << endl;
+			cout << "Obrona: " << defHolder << " -> " << def << endl << endl;
+		}
 		
-		checkForLevelUp();
 	}
 	void clearBeforeBattle() {
 		if(oldATK != 0) {
@@ -461,7 +464,7 @@ public:
 			Action action = actions.at(i);
 			switch (action.type) {
 			case AT_BASIC:
-				cout << "1.  " << action.name << endl;
+				cout << "1. " << action.name << endl;
 				cout << "Regeneruje punkt umiejetnosci." << endl;
 				break;
 			case AT_SKILL:
